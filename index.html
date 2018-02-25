@@ -6,82 +6,109 @@
   <title>latenight</title>
 
   <!-- CSS  -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
+  <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection" />
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
+  <link href="https://vjs.zencdn.net/5-unsafe/video-js.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropper/3.1.4/cropper.min.css" rel="stylesheet" />
 </head>
 <body>
   <nav class="grey darken-4" role="navigation">
     <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">latenight.moe</a>
       <ul class="right hide-on-med-and-down">
-        <li><a href="#">Navbar Link</a></li>
-        <li class="group-no-login"><a href="#"><i class="material-icons">account_circle</i></a></li>
+        <li><a href="#!list/watching/1" data-fb-login-required>Watching</a></li>
+        <li><a href="#!list/latest/1">Latest</a></li>
+        <li><a href="#!list/popular/1">Popular</a></li>
+        <li class="group-login"><a href="#login" class="modal-trigger" data-fb-profile-image><i class="material-icons">account_circle</i></a></li>
       </ul>
 
       <ul id="nav-mobile" class="side-nav">
-        <li><a href="#">Navbar Link</a></li>
-        <li class="group-no-login"><a href="#">Login / Register</a></li>
+        <li><a href="#!list/watching/1" data-fb-login-required>Watching</a></li>
+        <li><a href="#!list/latest/1">Latest</a></li>
+        <li><a href="#!list/popular/1">Popular</a></li>
+        <li class="group-login"><a href="#login" class="modal-trigger">Login / Register</a></li>
       </ul>
       <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
     </div>
   </nav>
 
   <div class="black white-text">
-    <div class="section no-pad-bot" id="index-banner">
+    <section id="welcome">
+      <div class="section no-pad-bot" id="index-banner">
+          <div class="container center-align">
+            <br>
+            <h4>Welcome to</h4>
+            <h1 class="header center light-blue-text">latenight.moe</h1>
+            <div class="row center">
+              <p>Go ahead and relax for a bit.</p>
+              <p>Why not watch an episode or two?</p>
+              <h5 class="header col s12 light">Wait, what? It actually works now? Huh?!</h5>
+            </div>
+            <div class="row center">
+              <a href="#!list/watching/1" class="btn-large waves-effect waves-light light-blue" data-fb-login-required>Watching</a>
+            </div>
+            <div class="row center">
+              <a href="#!list/latest/1#" class="btn-large waves-effect waves-light light-blue">Latest</a>
+            </div>
+            <div class="row center">
+              <a href="#!list/popular/1" class="btn-large waves-effect waves-light light-blue">Popular</a>
+            </div>
+            <br><br>
+          </div>
+        </div>
+    
+        <div class="container">
+          <div class="section">
+            <div class="row">
+              <div class="col s12 m4">
+                <div class="icon-block">
+                  <h2 class="center light-blue-text"><i class="material-icons">flash_on</i></h2>
+                  <h5 class="center">Speeds up development</h5>
+                  <p class="light">We did most of the heavy lifting for you to provide a default stylings that incorporate our custom components. Additionally, we refined animations and transitions to provide a smoother experience for developers.</p>
+                </div>
+              </div>
+    
+              <div class="col s12 m4">
+                <div class="icon-block">
+                  <h2 class="center light-blue-text"><i class="material-icons">group</i></h2>
+                  <h5 class="center">User Experience Focused</h5>
+                  <p class="light">By utilizing elements and principles of Material Design, we were able to create a framework that incorporates components and animations that provide more feedback to users. Additionally, a single underlying responsive system across all platforms allow for a more unified user experience.</p>
+                </div>
+              </div>
+    
+              <div class="col s12 m4">
+                <div class="icon-block">
+                  <h2 class="center light-blue-text"><i class="material-icons">settings</i></h2>
+                  <h5 class="center">Easy to work with</h5>
+                  <p class="light">We have provided detailed documentation as well as specific code examples to help new users get started. We are also always open to feedback and can answer any questions a user may have about Materialize.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br><br>
+        </div>
+    </section>
+    <section id="listing">
+      <br><br>
       <div class="container">
-        <br><br>
-        <h1 class="header center light-blue-text">Starter Template</h1>
-        <div class="row center">
-          <h5 class="header col s12 light">A modern responsive front-end framework based on Material Design</h5>
-        </div>
-        <div class="row center">
-          <a href="http://materializecss.com/getting-started.html" id="download-button" class="btn-large waves-effect waves-light light-blue">Get Started</a>
-        </div>
-        <br><br>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="section">
-        <div class="row">
-          <div class="col s12 m4">
-            <div class="icon-block">
-              <h2 class="center light-blue-text"><i class="material-icons">flash_on</i></h2>
-              <h5 class="center">Speeds up development</h5>
-              <p class="light">We did most of the heavy lifting for you to provide a default stylings that incorporate our custom components. Additionally, we refined animations and transitions to provide a smoother experience for developers.</p>
-            </div>
-          </div>
-
-          <div class="col s12 m4">
-            <div class="icon-block">
-              <h2 class="center light-blue-text"><i class="material-icons">group</i></h2>
-              <h5 class="center">User Experience Focused</h5>
-              <p class="light">By utilizing elements and principles of Material Design, we were able to create a framework that incorporates components and animations that provide more feedback to users. Additionally, a single underlying responsive system across all platforms allow for a more unified user experience.</p>
-            </div>
-          </div>
-
-          <div class="col s12 m4">
-            <div class="icon-block">
-              <h2 class="center light-blue-text"><i class="material-icons">settings</i></h2>
-              <h5 class="center">Easy to work with</h5>
-              <p class="light">We have provided detailed documentation as well as specific code examples to help new users get started. We are also always open to feedback and can answer any questions a user may have about Materialize.</p>
-            </div>
-          </div>
-        </div>
+        <div id="posters" class="row black-text"></div>
+        <br clear="all">
+        <ul id="pagination" class="pagination"></ul>
       </div>
       <br><br>
-    </div>
+    </section>
   </div>
 
   <footer class="page-footer grey darken-4">
     <div class="container">
       <div class="row">
         <div class="col l6 s12">
-          <h5 class="white-text">Company Bio</h5>
-          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+          <h5 class="white-text">About latenight.moe</h5>
+          <p class="grey-text text-lighten-4">It's a website with some cute anime stuff and more. Maybe it will evolve into something better. Or worse.</p>
         </div>
         <div class="col l3 s12">
-          <h5 class="white-text">Settings</h5>
+          <h5 class="white-text">Latest</h5>
           <ul>
             <li><a class="white-text" href="#!">Link 1</a></li>
             <li><a class="white-text" href="#!">Link 2</a></li>
@@ -90,7 +117,7 @@
           </ul>
         </div>
         <div class="col l3 s12">
-          <h5 class="white-text">Connect</h5>
+          <h5 class="white-text">Popular</h5>
           <ul>
             <li><a class="white-text" href="#!">Link 1</a></li>
             <li><a class="white-text" href="#!">Link 2</a></li>
@@ -102,15 +129,248 @@
     </div>
     <div class="footer-copyright">
       <div class="container">
-      Made by <a class="light-blue-text text-lighten-3" href="http://materializecss.com">Materialize</a>
+      <a class="light-blue-text text-lighten-3" href="https://dev6.latenight.moe">latenight.moe</a> 6.0
       </div>
     </div>
   </footer>
 
+  <section id="info" class="overlay" aria-hidden="true">
+    <nav>
+      <div class="nav-wrapper light-blue darken-4">
+        <a href="#!close-info" class="brand-logo center ellipsis" data-ln-active-title>Series</a>
+        <ul class="left">
+          <li><a href="#!close-info"><i class="material-icons">chevron_left</i></a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="black overlay-content bg-fix" data-ln-active-background>
+      <div class="poster center-align">
+        <img src="#" class="z-depth-4" data-ln-active-poster>
+      </div>
+      <div class="container white black-text">
+        <div class="section">
+          <div class="row">
+            <div class="col s10 offset-s1">
+              <p class="flow-text" data-ln-active-overview></p>
+            </div>
+            <div class="input-field col s10 offset-s1">
+              <select id="seasons"></select>
+              <label>Season</label>
+            </div>
+            <div class="col s10 offset-s1">
+              <div id="episodes" class="row"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fixed-action-btn horizontal">
+      <a class="btn-floating btn-large light-blue">
+        <i class="large material-icons">menu</i>
+      </a>
+      <ul>
+        <li><a class="btn-floating pink lighten-2 tooltipped infoMarkFavorites" data-position="top" data-delay="50" data-tooltip="Add to favorites"><i class="material-icons">favorite</i></a></li>
+        <li><a class="btn-floating amber darken-2 tooltipped infoMarkWatching" data-position="top" data-delay="50" data-tooltip="Bookmark"><i class="material-icons">bookmark</i></a></li>
+        <li><a class="btn-floating green tooltipped infoMarkWatched" data-position="top" data-delay="50" data-tooltip="Mark as watched"><i class="material-icons">done</i></a></li>
+        <li><a class="btn-floating light-blue lighten-4 tooltipped" data-position="top" data-delay="50" data-tooltip="Write a review"><i class="material-icons">mode_edit</i></a></li>
+      </ul>
+    </div>
+
+  </section>
+
+  <div id="login" class="grey white-text darken-4 modal">
+    <div class="modal-content">
+      <div class="row">
+
+        <div class="col s12">
+          <ul class="tabs tabs-fixed-width grey darken-4">
+            <li class="tab col s6"><a class="active white-text" href="#loginLogin">Login</a></li>
+            <li class="tab col s6"><a class="white-text"href="#loginRegister">Register</a></li>
+          </ul>
+        </div>
+
+        <div id="loginLogin" class="col s12">
+          <div class="row">
+            <div class="col s12">
+              <br>
+            </div>
+            <form id="formLogin" class="col s12">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="formLoginEmail" type="email" class="validate">
+                  <label for="formLoginEmail">Email</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="formLoginPassword" type="password" class="validate">
+                  <label for="formLoginPassword">Password</label>
+                </div>
+              </div>
+              <!--
+              <div class="row">
+                <div class="col s12 center-align">
+                  <input type="checkbox" id="formLoginRemember">
+                  <label for="formLoginRemember">Remember Me?</label>
+                </div>
+              </div>
+              -->
+              <div class="row">
+                <div class="input-field col s12 center-align">
+                  <input class="btn light-blue waves-effect" id="formLoginSubmit" type="submit" value="Login">
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="loginRegister" class="col s12">
+          <div class="row">
+            <div class="col s12">
+              <br>
+            </div>
+            <form id="formRegister" class="col s12">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="formRegisterEmail" type="email" class="validate">
+                  <label for="formRegisterEmail">Email</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="formRegisterPassword" type="password" class="validate">
+                  <label for="formRegisterPassword">Password</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12 center-align">
+                  <input class="btn light-blue waves-effect" id="formRegisterSubmit" type="submit" value="Register">
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="account" class="modal modal-fixed-footer">
+    <div class="modal-content white black-text">
+      <h4 data-fb-user></h4>
+      <div class="row">
+        <div class="col s12">
+          <ul class="tabs">
+            <li class="tab col s3"><a class="active" href="#accountstatus">Status</a></li>
+            <li class="tab col s3"><a href="#accountprofile">Profile</a></li>
+            <li class="tab col s3"><a href="#accountsettings">Settings</a></li>
+          </ul>
+        </div>
+        <div id="accountstatus" class="col s12">
+          <div class="row">
+            <br>
+            <form class="col s12">
+              <div class="row">
+                <div class="input-field col s12">
+                  <i class="material-icons prefix">email</i>
+                  <input id="statusEmail" type="email" class="validate" value="" data-fb-email disabled>
+                  <label for="statusEmail">Email</label>
+                </div>
+                <div class="col s12">
+                  <p>
+                    <input type="checkbox" id="statusEmailVerified" disabled />
+                    <label for="statusEmailVerified">Verified Email</label>
+
+                    <a href="#!" id="statusEmailVerifyBtn">Send verification email</a>
+                  </p>
+                  <br>
+                </div>
+                <div class="input-field col s12">
+                  <a href="#!" id="statusUpdatePasswordDialog">Change Password</a>
+                  <div class="group-password">
+                    <i class="material-icons prefix">lock</i>
+                    <input id="statusPassword" type="password" class="validate" value="">
+                    <label for="statusPassword">Password</label>
+                  </div>
+                </div>
+                <div class="col s12">
+                  <a href="#!" id="statusUpdatePasswordBtn" class="btn full group-password">Save Password</a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div id="accountprofile" class="col s12">
+          <div class="row">
+            <br>
+            <form id="formProfile" class="col s12">
+              <div class="row">
+                <div class="input-field col s12">
+                  <input placeholder="Keep it appropriate, please." id="profileDisplayName" type="text" class="validate" data-length="32" value="" data-fb-user>
+                  <label for="profileDisplayName">Display Name</label>
+                </div>
+                <div class="col s12">
+                  <br>
+                  <a class="btn full"  id="profileDisplayNameSaveBtn" aria-hidden="true">Save Name</a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col s6">
+                  <input type="file" accept="image/*" id="profileUploadImageDialog" style="display: none;">
+                  <a class="btn full" id="profileUploadImageDialogBtn">Select Image</a>
+                </div>
+                <div class="col s6">
+                  <a class="btn full" id="profileUploadImageSave" aria-hidden="true">Save Image</a>
+                </div>
+                <div class="col s12">
+                  <br>
+                  <div>
+                    <img id="profileUploadImage" style="max-width: 100%;">
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div id="accountsettings" class="col s12">
+          
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="red-text modal-action modal-close waves-effect waves-light btn-flat" data-fb-logout>Logout</a>
+      <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
+
+  <div id="mediaPlayer" class="modal">
+    <div class="modal-content white black-text">
+      <p>
+        <video id="media-player" class="video-js vjs-default-skin vjs-16-9 vjs-big-play-centered" controls preload="auto" width="640" height="264" data-setup='{"manualCleanup": true}'>
+        </video>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    window.HELP_IMPROVE_VIDEOJS = false;
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.14.0/js/canvas-to-blob.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.0/js.cookie.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
+  <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="js/materialize.js"></script>
+  <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
+  <script src="https://unpkg.com/masonry-layout@4.2.1/dist/masonry.pkgd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <script src="https://vjs.zencdn.net/6.6.3/video.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropper/3.1.4/cropper.min.js"></script>
+  <script src="js/materialize.min.js"></script>
+  <script src="js/latenight.js"></script>
   <script src="js/firebase.js"></script>
+  <script src="js/adapter.js"></script>
   <script src="js/main.js"></script>
 
   </body>

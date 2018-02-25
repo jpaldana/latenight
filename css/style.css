@@ -6,9 +6,129 @@
  * Made By MaterializeCSS.com
  */
 
- .icon-block {
+.icon-block {
   padding: 0 15px;
 }
 .icon-block .material-icons {
 	font-size: inherit;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#posters .card-title {
+  background-color: rgba(0, 0, 0, 0.75);
+  width: 100%;
+}
+#posters .card-content {
+  padding: 0;
+}
+#posters .card-content p {
+  /*height: 8em;*/
+  padding-right: 0.25em;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.scroll::-webkit-scrollbar-track,
+#posters .card-content p::-webkit-scrollbar-track
+{
+	background-color: transparent;
+}
+
+.scroll::-webkit-scrollbar,
+#posters .card-content p::-webkit-scrollbar
+{
+	width: 4px;
+	background-color: transparent;
+}
+
+.scroll::-webkit-scrollbar-thumb,
+#posters .card-content p::-webkit-scrollbar-thumb
+{
+	background-color: #4d4d4d;
+}
+
+.cards-container {
+  column-break-inside: avoid;
+}
+.cards-container .card {
+  display: inline-block;
+  overflow: visible;
+}
+
+#info .brand-logo {
+  /*max-width: 75vw;*/
+  max-width: calc(100vw - 8em);
+}
+
+.noscroll { 
+  overflow: hidden;
+}
+
+.overlay {
+  position: fixed; 
+  overflow: hidden;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+}
+.overlay .overlay-content {
+  position: absolute;
+  overflow-y: auto;
+  top: 53px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.overlay .overlay-content > .poster {
+  margin-top: 80px;
+}
+.overlay .overlay-content > .poster img {
+  max-width: 50vw;
+  max-height: 35vh;
+}
+.overlay .overlay-content > .container {
+  margin-top: -80px;
+  padding-top: 80px;
+  /*min-height: calc(100vh - 80px);*/
+}
+@media screen and (min-width: 600px) {
+  .overlay .overlay-content {
+    top: 64px;
+  }
+}
+
+.bg-fix {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+.btn.full {
+  width: 100%;
+}
+
+.profile-circle {
+  width: 33px;
+  height: 33px;
+  margin: 10px;
+  border-radius: 50%;
+}
+@media screen and (min-width: 600px) {
+  .profile-circle {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+[aria-hidden="true"] {
+  display: none;
+}
+[aria-hidden="false"] {
+  display: block;
 }

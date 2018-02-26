@@ -29,6 +29,8 @@ firebase.auth().onAuthStateChanged(function(user) {
     fbUser = user;
     fbDatabase = firebase.database();
     fbInitHandlers();
+    lnProcHash();
+    Materialize.Toast.removeAll();
   }
   else {
     if (fbUser == false) {
@@ -49,7 +51,9 @@ var fbFillUser = function(user) {
   }
   uiReplace(elsDisplayName, displayName, "text");
   uiReplace(elsDisplayEmail, user.email, "text");
-  uiReplace(elsDisplayProfileImage, user.photoURL, "profile-image");
+  if (typeof user.photoURL == "string") {
+    uiReplace(elsDisplayProfileImage, user.photoURL, "profile-image");
+  }
 
   if (user.emailVerified) {
     $("#statusEmailVerifyBtn").hide();
@@ -60,6 +64,8 @@ var fbFillUser = function(user) {
     $("#statusEmailVerified").attr("checked", false);
     elsRequireEmailVerification.attr("disabled", true);
   }
+
+  $("#profileStatsBtn").attr("href", "#!stats/" + user.uid);
 
   Materialize.updateTextFields();
 };

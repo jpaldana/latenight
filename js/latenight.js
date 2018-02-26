@@ -27,6 +27,12 @@ var $masonryGrid;
 var $masonryEpisodeGrid;
 var videojsPlayer;
 
+var lnTimer = function() {
+  if (lnQueue.length > 0) {
+    lnProcQueue();
+  }
+};
+
 var lnLog = function(text) {
   var stack = [];
   for (var i = 0; i < arguments.length; i++) {
@@ -39,7 +45,8 @@ var lnIsAvailable = function() {
 };
 var lnProcQueue = function() {
   if (lnQueue.length > 0) {
-    while (lnQueue.length > 0) {
+    //while (lnQueue.length > 0) {
+    for (var i = 0; i < lnQueue.length; i++) {
       var fn = lnQueue.shift();
       if (typeof fn == "function") {
         lnLog("deferred call fn", fn.name);
@@ -75,6 +82,9 @@ var lnDoGenerateListing = function(type) {
   else if (type == "alphabet") {
     fn = lnDoGenerateListingAlphabet;
   }
+  else if (type == "stats") {
+    fn = lnDoGenerateListingStats;
+  }
   if (typeof fn == "function") {
     lnListingType = type;
     if (!lnIsAvailable()) {
@@ -98,7 +108,38 @@ var lnDoGenerateListingContainer = function() {
   elPagination.empty();
   elListing.show();
 };
+var lnDoGenerateListingStats = function() {
+  if (!fbCachedStatsList) {
+    lnQueue.push(lnDoGenerateListingStats);
+    lnLog("deferring stats listing");
+    return;
+  }
+
+  lnSorted = [];
+  for (var slug in fbCachedStatsList) {
+    var watchingBlob = fbCachedStatsList[slug];
+    for (var i in lnCache) {
+      var blob = lnCache[i];
+      if (blob.titleSlug == slug) {
+        lnSorted.push(blob);
+      }
+    }
+  }
+  
+  lnSorted.sort(function(a, b) {
+    var aVal = (typeof a.previousAiring == "undefined") ? ((typeof a.inCinemas == "undefined") ? "0000" : a.inCinemas) : a.previousAiring;
+    var bVal = (typeof b.previousAiring == "undefined") ? ((typeof b.inCinemas == "undefined") ? "0000" : b.inCinemas) : b.previousAiring;
+    return -aVal.localeCompare(bVal);
+  });
+
+  lnDoGeneratePosters();
+};
 var lnDoGenerateListingWatching = function() {
+  if (!fbCachedWatchingList) {
+    lnQueue.push(lnDoGenerateListingWatching);
+    lnLog("deferring watching listing");
+    return;
+  }
   //lnSorted = lnCache; // TODO
   lnSorted = [];
   for (var slug in fbCachedWatchingList) {
@@ -157,6 +198,7 @@ var lnDoGeneratePosters = function() {
     lnDoGeneratePoster(blob);
   }
 
+  $(".tooltipped").tooltip({delay: 50});
   $masonryGrid.imagesLoaded().progress(function() {
     $masonryGrid.masonry("layout");
   });
@@ -172,7 +214,7 @@ var lnDoGeneratePoster = function(blob) {
   var details = "<ul class='collection' style='margin-top: 20px;'>" + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status) + 
-    "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>done</i></a></div></li>".format(blob.titleSlug) + 
+    "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>done</i></a></div></li>".format(blob.titleSlug) + 
   "</ul>";
 
   var poster =
@@ -343,9 +385,17 @@ var lnProcHash = function(e) {
   if (typeof e == "undefined") {
     target = location.hash;
   }
-  else {
+  else if (typeof e == "object") {
     target = $(this).attr("href");
     e.preventDefault();
+  }
+  else if (typeof e == "number") {
+    if (e == 0) {
+      Materialize.toast("Something went wrong.", 2000);
+      console.log("reached e=0 for proc hash with number arg");
+      return;
+    }
+    target = location.hash;
   }
   if (target.substring(0, 2) !== "#!") {
     lnLog("ignoring non-#! href", target);
@@ -384,6 +434,32 @@ var lnProcHash = function(e) {
       elBody.removeClass("noscroll");
       return;
     break;
+    case "stats":
+      if (!fbUser) {
+        if (typeof e == "number") {
+          if (e == 1) {
+            Materialize.toast("You must be logged in to view others' stats.");
+          }
+          else {
+            lnQueue.push(function() { lnProcHash(e-1); });
+          }
+        }
+        else {
+          lnQueue.push(function() { lnProcHash(2); });
+        }
+        return;
+      }
+      elInfo.attr("aria-hidden", "true");
+      elBody.removeClass("noscroll");
+      lnListingType = "stats";
+      lnStart = 0;
+
+      var uid = hash[0];
+      fbDatabase.ref("watching/" + uid).on("value", fbAdapterStatsList);
+
+      lnLog("hash: list (re)load - stats", lnListingType, lnStart);
+      lnDoGenerateListing(lnListingType);
+    break;
   }
 
   lnHashCache = target;
@@ -412,7 +488,7 @@ var lnProcFile = function(e) {
   $.post(LatenightApiEndpoint, {
     "gdrive-file": file
   }, lnProcGdriveFile);
-  Materialize.toast("Loading episode...");
+  Materialize.toast("Loading episode...", 2000);
 };
 
 var lnProcGdriveFile = function(data) {
@@ -461,6 +537,7 @@ $(function() {
   });
   $("select").material_select();
   videojsPlayer = videojs("media-player");
+  setInterval(lnTimer, 1000);
 });
 
 window.onhashchange = function() {

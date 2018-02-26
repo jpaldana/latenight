@@ -10,8 +10,9 @@
   <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
   <link href="css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection" />
   <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection" />
-  <link href="https://vjs.zencdn.net/5-unsafe/video-js.css" rel="stylesheet" />
+  <link href="https://vjs.zencdn.net/5.19/video-js.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropper/3.1.4/cropper.min.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/ie8/1.1/videojs-ie8.min.js"></script>
 </head>
 <body>
   <nav class="grey darken-4" role="navigation">
@@ -33,7 +34,7 @@
     </div>
   </nav>
 
-  <div class="black white-text">
+  <div class="black white-text span-height">
     <section id="welcome">
       <div class="section no-pad-bot" id="index-banner">
           <div class="container center-align">
@@ -58,6 +59,7 @@
           </div>
         </div>
     
+        <!--
         <div class="container">
           <div class="section">
             <div class="row">
@@ -88,8 +90,9 @@
           </div>
           <br><br>
         </div>
+        -->
     </section>
-    <section id="listing">
+    <section id="listing" style="display: none;">
       <br><br>
       <div class="container">
         <div id="posters" class="row black-text"></div>
@@ -107,6 +110,7 @@
           <h5 class="white-text">About latenight.moe</h5>
           <p class="grey-text text-lighten-4">It's a website with some cute anime stuff and more. Maybe it will evolve into something better. Or worse.</p>
         </div>
+        <!--
         <div class="col l3 s12">
           <h5 class="white-text">Latest</h5>
           <ul>
@@ -125,6 +129,7 @@
             <li><a class="white-text" href="#!">Link 4</a></li>
           </ul>
         </div>
+        -->
       </div>
     </div>
     <div class="footer-copyright">
@@ -172,7 +177,7 @@
       <ul>
         <li><a class="btn-floating pink lighten-2 tooltipped infoMarkFavorites" data-position="top" data-delay="50" data-tooltip="Add to favorites"><i class="material-icons">favorite</i></a></li>
         <li><a class="btn-floating amber darken-2 tooltipped infoMarkWatching" data-position="top" data-delay="50" data-tooltip="Bookmark"><i class="material-icons">bookmark</i></a></li>
-        <li><a class="btn-floating green tooltipped infoMarkWatched" data-position="top" data-delay="50" data-tooltip="Mark as watched"><i class="material-icons">done</i></a></li>
+        <li><a class="btn-floating green tooltipped infoMarkCompleted" data-position="top" data-delay="50" data-tooltip="Mark as watched"><i class="material-icons">done</i></a></li>
         <li><a class="btn-floating light-blue lighten-4 tooltipped" data-position="top" data-delay="50" data-tooltip="Write a review"><i class="material-icons">mode_edit</i></a></li>
       </ul>
     </div>
@@ -330,6 +335,11 @@
                   </div>
                 </div>
               </div>
+              <div class="row">
+                <div class="col s12">
+                  <a class="btn full" href="#!stats" id="profileStatsBtn">Stats Page</a>
+                </div>
+              </div>
             </form>
           </div>
         </div>
@@ -365,7 +375,7 @@
   <script src="https://unpkg.com/imagesloaded@4/imagesloaded.pkgd.min.js"></script>
   <script src="https://unpkg.com/masonry-layout@4.2.1/dist/masonry.pkgd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
-  <script src="https://vjs.zencdn.net/6.6.3/video.js"></script>
+  <script src="https://vjs.zencdn.net/5.19/video.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropper/3.1.4/cropper.min.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="js/latenight.js"></script>

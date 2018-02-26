@@ -13,6 +13,13 @@
 	font-size: inherit;
 }
 
+html {
+  background-color: #212121;
+}
+.span-height > section {
+  min-height: calc(100vh - 290px);
+}
+
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;

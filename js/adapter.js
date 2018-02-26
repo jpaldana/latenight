@@ -1,4 +1,5 @@
-var fbCachedWatchingList = {};
+var fbCachedWatchingList = false;
+var fbCachedStatsList = false;
 
 var fbInitHandlers = function() {
   console.log("init fb handlers");
@@ -19,6 +20,14 @@ var fbAdapterWatchingList = function(snapshot) {
   }
 
   fbProcAdapterList();
+};
+var fbAdapterStatsList = function(snapshot) {
+  var data = snapshot.val();
+  console.log("watching list", data);
+  if (data !== null) {
+    fbCachedStatsList = data;
+  }
+  lnProcQueue();
 };
 
 var fbProcAdapterList = function() {

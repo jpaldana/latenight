@@ -211,7 +211,7 @@ var lnDoGeneratePoster = function(blob) {
   var thumbnail = lnApiImage(blob, "poster").replace("poster.jpg", "poster-500.jpg");
   var timeAgo = moment(blob.previousAiring).fromNow();
 
-  var details = "<ul class='collection' style='margin-top: 20px;'>" + 
+  var details = "<ul class='collection'>" + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status) + 
     "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>done</i></a></div></li>".format(blob.titleSlug) + 
@@ -306,22 +306,41 @@ var lnDoGenerateEpisodes = function() {
     var blob = lnSeasonCache[i];
     if (blob.seasonNumber == seasonNum) {
       var thumbnail = SonarrEpisodeEndpoint + blob.id;
-      var details = "[watch blah]";
-      var title = "{1} - {0}".format(blob.title, blob.episodeNumber);
+      var title = "<b>{1}</b> - {0}".format(blob.title, blob.episodeNumber);
       if (typeof blob.absoluteEpisodeNumber == "number" && blob.episodeNumber !== blob.absoluteEpisodeNumber) {
         title = "{1} ({2}) - {0}".format(blob.title, blob.episodeNumber, blob.absoluteEpisodeNumber);
       }
+
+      var timeAgo = moment(blob.airDateUtc).fromNow();
+      var epStatus = "not available";
+      var direct = "#!";
+      if (blob.hasFile) {
+        epStatus = "{0} / {1}".format(blob.episodeFile.quality.quality.name, bytesToSize(blob.episodeFile.size));
+        direct = "https://local-media.latenight.moe" + blob.episodeFile.path;
+      }
+      var details = "<ul class='collection'>" + 
+        "<li class='collection-item ellipsis tooltipped' data-tooltip=\"{1}\">{0}</li>".format(title, blob.title) + 
+        "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
+        "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(epStatus);
+      if (blob.hasFile) {
+        details += "<li class='collection-item'><a href=\"{0}\" class='btn full waves-effect'>Direct Link (local)</a></li>".format(direct);
+      }
+      else {
+        details += "<li class='collection-item'>&mdash;</li>"
+      }
+      details += "</ul>";
+
       if (!blob.hasFile) {
         thumbnail = "img/blank-episode.jpg";
         var poster =
-          "<div class='col s12 m6 l4 xl3 grid'>" +
+          "<div class='col s12 m6 l6 xl4 grid'>" +
             "<div class='card'>" +
               "<div class='card-image'>" +
                 "<img src='{0}'>".format(thumbnail) +
                 "<a class='btn-floating halfway-fab waves-effect waves-light red lighten-2'><i class='material-icons'>close</i></a>" +
               "</div>" +
               "<div class='card-content'>" +
-                "<p class='ellipsis'>{0}</p>".format(title) +
+                "{0}".format(details) +
               "</div>" +
             "</div>" +
           "</div>";
@@ -331,14 +350,14 @@ var lnDoGenerateEpisodes = function() {
         file = file.substring(file.lastIndexOf("/") + 1);
         file = encodeURIComponent(file);
         var poster =
-          "<div class='col s12 m6 l4 xl3 grid'>" +
+          "<div class='col s12 m6 l6 xl4 grid'>" +
             "<div class='card'>" +
               "<div class='card-image'>" +
                 "<img src='{0}' class='activator'>".format(thumbnail) +
                 "<a class='btn-floating halfway-fab waves-effect waves-light light-blue lighten-2' data-file=\"{0}\" data-file-id='{1}' href='#!' data-fb-login-required><i class='material-icons'>play_arrow</i></a>".format(file, blob.id) +
               "</div>" +
               "<div class='card-content'>" +
-                "<p class='ellipsis'>{0}</p>".format(title) +
+                "{0}".format(details) +
               "</div>" +
               "<div class='card-reveal scroll'>" +
                 "<span class='card-title white black-text'>{0}<i class='material-icons right'>close</i></span>".format(title) +
@@ -356,6 +375,7 @@ var lnDoGenerateEpisodes = function() {
     $masonryEpisodeGrid.masonry("layout");
   });
   $masonryEpisodeGrid.masonry("reloadItems");
+  $(".tooltipped").tooltip({delay: 50});
 };
 
 var lnApiImage = function(blob, type) {

@@ -7,6 +7,9 @@ var SonarrEpisodeEndpoint = "https://dev6-api.latenight.moe/twilight/Thumbnail.p
 var LatenightApiEndpoint = "https://dev6-api.latenight.moe/api.php";
 var TwilightApiEndpoint = "https://dev6-api.latenight.moe/twilight/Subtitle.php?host=sonarr&id=";
 
+var evLatenightReady = false;
+var evFirebaseReady = false;
+
 $(function(){
   // side nav
   $('.button-collapse').sideNav();

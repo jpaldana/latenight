@@ -30,6 +30,7 @@ html {
   background-color: rgba(0, 0, 0, 0.75);
   width: 100%;
 }
+#episodes .card-content,
 #posters .card-content {
   padding: 0;
 }
@@ -38,6 +39,10 @@ html {
   padding-right: 0.25em;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+ul.collection {
+  margin-top: 0px;
 }
 
 .scroll::-webkit-scrollbar-track,

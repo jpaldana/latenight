@@ -6,6 +6,7 @@ var RadarrMediaEndpoint = "https://dev6-api.latenight.moe/latenight-media/index.
 var SonarrEpisodeEndpoint = "https://dev6-api.latenight.moe/twilight/Thumbnail.php?host=sonarr&id=";
 var LatenightApiEndpoint = "https://dev6-api.latenight.moe/api.php";
 var TwilightApiEndpoint = "https://dev6-api.latenight.moe/twilight/Subtitle.php?host=sonarr&id=";
+var GithubApiEndpoint = "https://api.github.com/repos/jpaldana/latenight/commits?per_page=1";
 
 var evLatenightReady = false;
 var evFirebaseReady = false;
@@ -20,6 +21,7 @@ $(function(){
 
   //lnDoGenerateListing(lnListingType);
   lnDoRefresh();
+  ghDoRequest();
 });
 
 // First, checks if it isn't implemented yet.

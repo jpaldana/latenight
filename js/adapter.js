@@ -117,3 +117,14 @@ var fbMarkValue = function(e) {
   data[prefixedTitleSlug + suffixTarget] = value;
   fbDatabase.ref().update(data);
 };
+
+var ghDoRequest = function() {
+  $.get(GithubApiEndpoint, ghProcRequest);
+};
+
+var ghProcRequest = function(data) {
+  var hash = data[0].sha.substring(0, 8);
+  var message = data[0].commit.message;
+  var timeSince = moment(data[0].commit.author.date).fromNow();
+  $("[data-gh-commit]").html("-{0} <a href='{2}'>{1}</a> {3}".format(hash, message, data[0].html_url, timeSince));
+};

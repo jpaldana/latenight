@@ -12,6 +12,7 @@ firebase.initializeApp(config);
 var fbDatabase = false;
 var fbLoggedIn = false;
 var fbUser = false;
+var fbReady = false;
 
 var elsFbLogout = $("[data-fb-logout]");
 var elsDisplayName = $("[data-fb-user]");
@@ -22,20 +23,30 @@ var elsRequireEmailVerification = $("[data-fb-email-verification-required]");
 
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
-    console.log("auth success", user);
-    fbFillUser(user);
-    fbHookSignedIn();
-    fbLoggedIn = true;
+    if (user.isAnonymous) {
+      console.log("auth success (anon)", user);
+      fbLoggedIn = false;
+    }
+    else {
+      console.log("auth success", user);
+      fbFillUser(user);
+      fbHookSignedIn();
+      fbLoggedIn = true;
+    }
     fbUser = user;
     fbDatabase = firebase.database();
     fbInitHandlers();
     lnProcHash();
     Materialize.Toast.removeAll();
+    fbReady = true;
+    fbSyncData();
   }
   else {
     if (fbUser == false) {
-      console.log("auth fail/logout");
-      fbLoggedIn = false;
+      console.log("auth fail - now using anon login");
+      firebase.auth().signInAnonymously().catch(function(error) {
+        console.log("anon auth fail");
+      });
       $("body").on("click", "[data-fb-login-required]", fbInterceptLoginRequired);
     }
     else {
@@ -117,6 +128,7 @@ var fbDoUpdate = function(args) {
       fbUser = firebase.auth().currentUser;
       fbFillUser(fbUser);
       Materialize.toast("Updated profile successfully.", 2000);
+      fbSyncData();
     }).catch(function(error) {
       fbToastError(error);
     });
@@ -187,6 +199,17 @@ var fbDoUpdatePassword = function() {
     }).catch(function(error) {
       fbToastError(error);
     });
+  }
+};
+
+var fbSyncData = function() {
+  if (fbUser && !fbUser.isAnonymous) {
+    var prefixString = "users/" + fbUser.uid + "/";
+    var data = {};
+    
+    data[prefixString + "displayName"] = fbUser.displayName;
+    data[prefixString + "photoURL"] = fbUser.photoURL;
+    fbDatabase.ref().update(data);
   }
 };
 

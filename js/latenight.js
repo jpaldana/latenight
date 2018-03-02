@@ -6,6 +6,7 @@ var lnListingType = "latest";
 var lnSeasonCache = false;
 var lnHashCache = "";
 var lnActiveInfo = false;
+var lnReady = false;
 
 var lnAwaitFileId = false;
 
@@ -33,15 +34,25 @@ var lnTimer = function() {
   }
 };
 
+var lnFnQueue = function(fn) {
+  // don't allow dupes
+  for (var i in lnQueue) {
+    var qfn = lnQueue[i];
+    if (qfn.name == fn.name) {
+      lnLog("** fn already in queue, not adding", fn.name);
+      return;
+    }
+  }
+  lnQueue.push(fn);
+  lnLog("* pushing fn to queue", fn.name);
+};
+
 var lnLog = function(text) {
   var stack = [];
   for (var i = 0; i < arguments.length; i++) {
     stack.push(arguments[i]);
   }
   console.log.apply(null, stack);
-};
-var lnIsAvailable = function() {
-  return typeof lnCache !== "boolean";
 };
 var lnProcQueue = function() {
   if (lnQueue.length > 0) {
@@ -65,6 +76,7 @@ var lnDoRefresh = function() {
 
 var lnProcRefresh = function(data) {
   lnCache = data;
+  lnReady = true;
   lnProcQueue();
 };
 
@@ -87,9 +99,8 @@ var lnDoGenerateListing = function(type) {
   }
   if (typeof fn == "function") {
     lnListingType = type;
-    if (!lnIsAvailable()) {
-      lnQueue.push(fn);
-      lnLog("cache not yet available, pushing fn to queue", type);
+    if (!lnReady) {
+      lnFnQueue(fn);
       return;
     }
     else {
@@ -401,6 +412,10 @@ var lnApiImage = function(blob, type) {
 };
 
 var lnProcHash = function(e) {
+  if (!lnReady || !fbReady) {
+    lnFnQueue(lnProcHash);
+    return;
+  }
   var target;
   if (typeof e == "undefined") {
     target = location.hash;

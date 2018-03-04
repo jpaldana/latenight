@@ -1,5 +1,6 @@
 var fbCachedWatchingList = false;
 var fbCachedStatsList = false;
+var fbCachedTrackingList = false;
 
 var fbInitHandlers = function() {
   console.log("init fb handlers");
@@ -34,25 +35,23 @@ var fbProcAdapterList = function() {
   for (var i in fbCachedWatchingList) {
     var blob = fbCachedWatchingList[i];
     for (var j in blob) {
-      var color = "black-text";
+      //var color = "black-text";
+      color = "";
       switch (j) {
         case "bookmarked":
           if (blob[j]) {
-            color = "amber-text";
+            $(".infoMarkWatching[data-title='{0}']".format(i)).find("a").addClass("amber-text");
           }
-          $(".infoMarkWatching[data-title='{0}']".format(i)).find("a").removeClass("black-text").addClass(color);
         break;
         case "completed":
           if (blob[j]) {
-            color = "green-text";
+            $(".infoMarkCompleted[data-title='{0}']".format(i)).find("a").addClass("green-text");
           }
-          $(".infoMarkCompleted[data-title='{0}']".format(i)).find("a").removeClass("black-text").addClass(color);
         break;
         case "favorite":
           if (blob[j]) {
-            color = "pink-text";
+            $(".infoMarkFavorites[data-title='{0}']".format(i)).find("a").addClass("pink-text");
           }
-          $(".infoMarkFavorites[data-title='{0}']".format(i)).find("a").removeClass("black-text").addClass(color);
         break;
       }
     }
@@ -60,6 +59,11 @@ var fbProcAdapterList = function() {
 };
 
 var fbMarkValue = function(e) {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    Materialize.toast("You must be logged in to do this.", 2000);
+    e.preventDefault();
+    return;
+  }
   e.preventDefault();
 
   var titleSlug = false;
@@ -104,17 +108,51 @@ var fbMarkValue = function(e) {
     value = false;
     s1 = "Removed";
     s2 = "from";
-    $(this).find("a").removeClass("{0}-text".format(color)).addClass("black-text");
+    $(this).find("a").removeClass("{0}-text".format(color));
   }
   else {
     value = true;
     s1 = "Added";
     s2 = "to";
-    $(this).find("a").addClass("{0}-text".format(color)).removeClass("black-text");
+    $(this).find("a").addClass("{0}-text".format(color)).removeClass("amber-text green-text pink-text");
   }
   var title = lnGetBlobBySlug(titleSlug).title;
   Materialize.toast(toast.format(s1, title, s2), 2000);
   data[prefixedTitleSlug + suffixTarget] = value;
+  fbDatabase.ref().update(data);
+};
+
+var fbAdapterReceiveUserData = function(snapshot) {
+  var data = snapshot.val();
+  elListingTitle.text("{0}'s List".format(data.displayName));
+};
+
+var fbAdapterTrackingList = function(snapshot) {
+  // called only once after season selected
+  var data = snapshot.val();
+  fbCachedTrackingList = data;
+  if (typeof data == "object") {
+    for (var episodeId in data) {
+      if (data[episodeId]) {
+        $(".infoTrackEpisode[data-episode='{0}']".format(episodeId)).addClass("green-text");
+      }
+    }
+  }
+};
+
+var fbAdapterTrackEpisode = function(e) {
+  e.preventDefault();
+  var data = {};
+  var episodeId = $(this).attr("data-episode");
+  var value = false;
+  if ($(this).hasClass("green-text")) {
+    $(this).removeClass("green-text");
+  }
+  else {
+    $(this).addClass("green-text");
+    value = true;
+  }
+  data["tracker/" + fbUser.uid + "/" + lnActiveInfo.titleSlug + "/" + episodeId] = value;
   fbDatabase.ref().update(data);
 };
 

@@ -29,11 +29,11 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
     else {
       console.log("auth success", user);
-      fbFillUser(user);
       fbHookSignedIn();
       fbLoggedIn = true;
     }
     fbUser = user;
+    fbFillUser(user);
     fbDatabase = firebase.database();
     fbInitHandlers();
     lnProcHash();
@@ -56,6 +56,9 @@ firebase.auth().onAuthStateChanged(function(user) {
 });
 
 var fbFillUser = function(user) {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
+  }
   var displayName = user.email;
   if (typeof user.displayName == "string") {
     displayName = user.displayName;
@@ -123,16 +126,17 @@ var fbDoLogout = function() {
   });
 };
 var fbDoUpdate = function(args) {
-  if (fbLoggedIn) {
-    fbUser.updateProfile(args).then(function() {
-      fbUser = firebase.auth().currentUser;
-      fbFillUser(fbUser);
-      Materialize.toast("Updated profile successfully.", 2000);
-      fbSyncData();
-    }).catch(function(error) {
-      fbToastError(error);
-    });
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
   }
+  fbUser.updateProfile(args).then(function() {
+    fbUser = firebase.auth().currentUser;
+    fbFillUser(fbUser);
+    Materialize.toast("Updated profile successfully.", 2000);
+    fbSyncData();
+  }).catch(function(error) {
+    fbToastError(error);
+  });
 };
 
 var fbDoPreviewProfileImage = function(e) {
@@ -153,6 +157,9 @@ var fbDoCropperProfileImage = function() {
   $("#profileUploadImageSave").attr("aria-hidden", "false");
 };
 var fbDoPreviewProfileImageSave = function() {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
+  }
   var canvas = $("#profileUploadImage").cropper("getCroppedCanvas");
 
   $.post(LatenightApiEndpoint, {
@@ -165,19 +172,23 @@ var fbDoPreviewProfileImageSave = function() {
   });
 };
 var fbDoDisplayNameSave = function() {
-  if (fbUser) {
-    if ($("#profileDisplayName").val().length <= 32 && $("#profileDisplayName").val().length > 0) {
-      fbDoUpdate({
-        displayName: $("#profileDisplayName").val()
-      });
-    }
-    else {
-      Materialize.toast("Invalid name entered.", 2000);
-    }
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
+  }
+  if ($("#profileDisplayName").val().length <= 32 && $("#profileDisplayName").val().length > 0) {
+    fbDoUpdate({
+      displayName: $("#profileDisplayName").val()
+    });
+  }
+  else {
+    Materialize.toast("Invalid name entered.", 2000);
   }
 };
 
 var fbDoSendVerificationEmail = function() {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
+  }
   if (!fbUser.emailVerified) {
     fbUser.sendEmailVerification().then(function() {
       Materialize.toast("Verification email sent.", 2000);
@@ -188,33 +199,35 @@ var fbDoSendVerificationEmail = function() {
 };
 
 var fbDoUpdatePassword = function() {
-  if (fbUser) {
-    var newPassword = $("#statusPassword").val();
-    if (newPassword.length == 0) {
-      Materialize.toast("Invalid password.");
-      return;
-    }
-    fbUser.updatePassword(newPassword).then(function() {
-      Materialize.toast("Password updated.", 2000);
-    }).catch(function(error) {
-      fbToastError(error);
-    });
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
   }
+  var newPassword = $("#statusPassword").val();
+  if (newPassword.length == 0) {
+    Materialize.toast("Invalid password.");
+    return;
+  }
+  fbUser.updatePassword(newPassword).then(function() {
+    Materialize.toast("Password updated.", 2000);
+  }).catch(function(error) {
+    fbToastError(error);
+  });
 };
 
 var fbSyncData = function() {
-  if (fbUser && !fbUser.isAnonymous) {
-    var prefixString = "users/" + fbUser.uid + "/";
-    var data = {};
-    
-    data[prefixString + "displayName"] = fbUser.displayName;
-    data[prefixString + "photoURL"] = fbUser.photoURL;
-    fbDatabase.ref().update(data);
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    return;
   }
+  var prefixString = "users/" + fbUser.uid + "/";
+  var data = {};
+
+  data[prefixString + "displayName"] = fbUser.displayName;
+  data[prefixString + "photoURL"] = fbUser.photoURL;
+  fbDatabase.ref().update(data);
 };
 
 var fbInterceptLoginRequired = function(e) {
-  if (fbUser) {
+  if (fbLoggedIn && !fbUser.isAnonymous) {
     return;
   }
   e.preventDefault();

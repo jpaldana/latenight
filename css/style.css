@@ -124,6 +124,11 @@ ul.collection {
 .btn.full {
   width: 100%;
 }
+.btn-floating.middle-fab {
+  position: absolute;
+  right: calc(50% - 20px);
+  bottom: calc(50% - 20px);
+}
 
 .profile-circle {
   width: 33px;

@@ -13,6 +13,7 @@ var lnAwaitFileId = false;
 var elBody = $("body");
 var elWelcome = $("#welcome");
 var elListing = $("#listing");
+var elListingTitle = $("#listing-title");
 var elPosters = $("#posters");
 var elPagination = $("#pagination");
 var elInfo = $("#info");
@@ -23,6 +24,7 @@ var elsActiveTitle = $("[data-ln-active-title]");
 var elsActivePoster = $("[data-ln-active-poster]");
 var elsActiveBackground = $("[data-ln-active-background]");
 var elsActiveOverview = $("[data-ln-active-overview]");
+var elsActiveGenres = $("[data-ln-active-genres]");
 
 var $masonryGrid;
 var $masonryEpisodeGrid;
@@ -84,15 +86,19 @@ var lnDoGenerateListing = function(type) {
   var fn = false;
   if (type == "watching") {
     fn = lnDoGenerateListingWatching;
+    elListingTitle.text("My List");
   }
   else if (type == "latest") {
     fn = lnDoGenerateListingLatest;
+    elListingTitle.text("Latest");
   }
   else if (type == "popular") {
     fn = lnDoGenerateListingPopular;
+    elListingTitle.text("Popular");
   }
   else if (type == "alphabet") {
     fn = lnDoGenerateListingAlphabet;
+    elListingTitle.text("All (Alphabetical)");
   }
   else if (type == "stats") {
     fn = lnDoGenerateListingStats;
@@ -233,8 +239,8 @@ var lnDoGeneratePoster = function(blob) {
       "<div class='card'>" +
         "<div class='card-image'>" +
           "<img src='{0}' class='activator'>".format(thumbnail) +
-          "<span class='card-title ellipsis'>{0}</span>".format(blob.title) +
-          "<a class='btn-floating halfway-fab waves-effect waves-light light-blue' href='#!info/{0}'><i class='material-icons'>play_arrow</i></a>".format(blob.titleSlug) +
+          "<span class='card-title ellipsis tooltipped' data-tooltip=\"{0}\">{0}</span>".format(blob.title) +
+          "<a class='btn-floating middle-fab waves-effect waves-light light-blue z-depth-2' href='#!info/{0}'><i class='material-icons'>play_arrow</i></a>".format(blob.titleSlug) +
         "</div>" +
         "<div class='card-content'>" +
           "{0}".format(details) +
@@ -274,29 +280,40 @@ var lnDoGenerateInfo = function(slug) {
   elsActiveOverview.text(blob.overview);
   elSeasons.empty();
   elSeasons.append("<option value='' disabled selected>Choose a season</option>");
-  for (var i in blob.seasons) {
-    var season = blob.seasons[i];
-    var seasonTitle = "Season {0}".format(season.seasonNumber);
-    if (season.seasonNumber == 0) {
-      seasonTitle = "Extras";
-    }
-    for (var j in blob.alternateTitles) {
-      var alt = blob.alternateTitles[j];
-      if (i == alt.sceneSeasonNumber) {
-        seasonTitle = alt.title;
+  if (blob.tmdbId == "number") {
+    // movie stuff
+  }
+  else {
+    for (var i in blob.seasons) {
+      var season = blob.seasons[i];
+      var seasonTitle = "Season {0}".format(season.seasonNumber);
+      if (season.seasonNumber == 0) {
+        seasonTitle = "Extras";
       }
+      for (var j in blob.alternateTitles) {
+        var alt = blob.alternateTitles[j];
+        if (i == alt.sceneSeasonNumber) {
+          seasonTitle = alt.title;
+        }
+      }
+      elSeasons.append("<option value='{0}'>{0}. {1} ({2}/{3})</option>".format(
+        season.seasonNumber,
+        seasonTitle,
+        season.statistics.episodeCount,
+        season.statistics.totalEpisodeCount
+      ));
     }
-    elSeasons.append("<option value='{0}'>{0}. {1} ({2}/{3})</option>".format(
-      season.seasonNumber,
-      seasonTitle,
-      season.statistics.episodeCount,
-      season.statistics.totalEpisodeCount
-    ));
   }
   elSeasons.material_select();
   lnDoGenerateSeason(blob.id);
-  elEpisodes.empty();
+  elEpisodes.empty().css("height", "0");
   $masonryEpisodeGrid.masonry("reloadItems");
+  // genres
+  elsActiveGenres.empty();
+  for (var i in blob.genres) {
+    var genre = blob.genres[i];
+    elsActiveGenres.append("<div class='chip'>{0}</div> ".format(genre));
+  }
 };
 
 var lnDoGenerateSeason = function(id) {
@@ -322,22 +339,26 @@ var lnDoGenerateEpisodes = function() {
         title = "{1} ({2}) - {0}".format(blob.title, blob.episodeNumber, blob.absoluteEpisodeNumber);
       }
 
-      var timeAgo = moment(blob.airDateUtc).fromNow();
+      var timeAgo = "not yet released";
+      if (typeof blob.airDateUtc == "string") {
+        timeAgo = moment(blob.airDateUtc).fromNow();
+      }
       var epStatus = "not available";
       var direct = "#!";
       if (blob.hasFile) {
         epStatus = "{0} / {1}".format(blob.episodeFile.quality.quality.name, bytesToSize(blob.episodeFile.size));
         direct = "https://local-media.latenight.moe" + blob.episodeFile.path;
       }
+      var episodeId = "s{0}e{1}".format(seasonNum, blob.episodeNumber);
       var details = "<ul class='collection'>" + 
         "<li class='collection-item ellipsis tooltipped' data-tooltip=\"{1}\">{0}</li>".format(title, blob.title) + 
         "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
-        "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(epStatus);
+        "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>equalizer</i></a></div></li>".format(epStatus);
       if (blob.hasFile) {
-        details += "<li class='collection-item'><a href=\"{0}\" class='btn full waves-effect'>Direct Link (local)</a></li>".format(direct);
+        details += "<li class='collection-item center row'><div class='col s6'><a href=\"{0}\" class='tooltipped' data-tooltip='Direct Link (local)'><i class='material-icons'>link</i></a></div><div class='col s6'><a href='#' class='infoTrackEpisode tooltipped' data-tooltip='Mark as watched' data-episode='{1}'><i class='material-icons'>visibility</i></a></div></li>".format(direct, episodeId);
       }
       else {
-        details += "<li class='collection-item'>&mdash;</li>"
+        details += "<li class='collection-item'>&mdash;</li>";
       }
       details += "</ul>";
 
@@ -348,7 +369,7 @@ var lnDoGenerateEpisodes = function() {
             "<div class='card'>" +
               "<div class='card-image'>" +
                 "<img src='{0}'>".format(thumbnail) +
-                "<a class='btn-floating halfway-fab waves-effect waves-light red lighten-2'><i class='material-icons'>close</i></a>" +
+                "<a class='btn-floating middle-fab waves-effect waves-light red lighten-2 z-depth-2'><i class='material-icons'>close</i></a>" +
               "</div>" +
               "<div class='card-content'>" +
                 "{0}".format(details) +
@@ -365,7 +386,7 @@ var lnDoGenerateEpisodes = function() {
             "<div class='card'>" +
               "<div class='card-image'>" +
                 "<img src='{0}' class='activator'>".format(thumbnail) +
-                "<a class='btn-floating halfway-fab waves-effect waves-light light-blue lighten-2' data-file=\"{0}\" data-file-id='{1}' href='#!' data-fb-login-required><i class='material-icons'>play_arrow</i></a>".format(file, blob.id) +
+                "<a class='btn-floating middle-fab waves-effect waves-light light-blue lighten-2 z-depth-2' data-file=\"{0}\" data-file-id='{1}' href='#!' data-fb-login-required><i class='material-icons'>play_arrow</i></a>".format(file, blob.id) +
               "</div>" +
               "<div class='card-content'>" +
                 "{0}".format(details) +
@@ -387,6 +408,12 @@ var lnDoGenerateEpisodes = function() {
   });
   $masonryEpisodeGrid.masonry("reloadItems");
   $(".tooltipped").tooltip({delay: 50});
+
+  // add episode watch list after page has loaded
+  if (fbLoggedIn && !fbUser.isAnonymous) {
+    $(".infoTrackEpisode").on("click", fbAdapterTrackEpisode);
+    fbDatabase.ref("tracker/" + fbUser.uid + "/" + lnActiveInfo.titleSlug).once("value").then( fbAdapterTrackingList);
+  }
 };
 
 var lnApiImage = function(blob, type) {
@@ -436,9 +463,10 @@ var lnProcHash = function(e) {
     lnLog("ignoring non-#! href", target);
     return;
   }
-  if (lnHashCache == target) {
-    //lnLog("ignoring double hash event", target);
-    //return;
+  if (target.length == 2) {
+    // handle #! as do nothing links
+    console.log("doing nothing", target);
+    return;
   }
 
   var hash = target.substring(2).replace("#", "").split("/");
@@ -470,20 +498,6 @@ var lnProcHash = function(e) {
       return;
     break;
     case "stats":
-      if (!fbUser) {
-        if (typeof e == "number") {
-          if (e == 1) {
-            Materialize.toast("You must be logged in to view others' stats.");
-          }
-          else {
-            lnQueue.push(function() { lnProcHash(e-1); });
-          }
-        }
-        else {
-          lnQueue.push(function() { lnProcHash(2); });
-        }
-        return;
-      }
       elInfo.attr("aria-hidden", "true");
       elBody.removeClass("noscroll");
       lnListingType = "stats";
@@ -491,6 +505,7 @@ var lnProcHash = function(e) {
 
       var uid = hash[0];
       fbDatabase.ref("watching/" + uid).on("value", fbAdapterStatsList);
+      fbDatabase.ref("users/" + uid).on("value", fbAdapterReceiveUserData);
 
       lnLog("hash: list (re)load - stats", lnListingType, lnStart);
       lnDoGenerateListing(lnListingType);
@@ -512,7 +527,8 @@ var lnGetBlobBySlug = function(slug) {
 };
 
 var lnProcFile = function(e) {
-  if (!fbUser) {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    Materialize.toast("You must be logged in to do this action.", 2000);
     return;
   }
   e.preventDefault();

@@ -130,6 +130,11 @@ ul.collection {
   bottom: calc(50% - 20px);
 }
 
+#editor-text {
+  min-height: 50vh;
+  width: 100%;
+}
+
 .profile-circle {
   width: 33px;
   height: 33px;
@@ -141,6 +146,12 @@ ul.collection {
     width: 44px;
     height: 44px;
   }
+}
+
+.background-faded img {
+  width: 100%;
+  filter: blur(4px);
+  opacity: 0.5;
 }
 
 [aria-hidden="true"] {

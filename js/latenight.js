@@ -235,7 +235,7 @@ var lnDoGeneratePoster = function(blob) {
   "</ul>";
 
   var poster =
-    "<div class='col s12 m6 l4 xl3 grid'>" +
+    "<div class='col s6 l4 xl3 grid'>" +
       "<div class='card'>" +
         "<div class='card-image'>" +
           "<img src='{0}' class='activator'>".format(thumbnail) +

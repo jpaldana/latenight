@@ -16,19 +16,37 @@
 </head>
 <body>
   <nav class="grey darken-4" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">latenight.moe</a>
+    <div class="nav-wrapper container">
+      <a id="logo-container" href="#" class="brand-logo">latenight.moe</a>
+      <ul class="right">
+        <li class="group-login"><a href="#login" class="modal-trigger" data-fb-profile-image><i class="material-icons">account_circle</i></a></li>
+      </ul>
       <ul class="right hide-on-med-and-down">
         <li><a href="#!list/watching/1" data-fb-login-required>Watching</a></li>
         <li><a href="#!list/latest/1">Latest</a></li>
         <li><a href="#!list/popular/1">Popular</a></li>
-        <li class="group-login"><a href="#login" class="modal-trigger" data-fb-profile-image><i class="material-icons">account_circle</i></a></li>
       </ul>
 
       <ul id="nav-mobile" class="side-nav">
+        <li data-fb-login-visible>
+          <div class="user-view">
+            <div class="background background-faded black bg-fix valign-wrapper center-align">
+              <img src="" data-fb-profile-image />
+            </div>
+            <a href="#account" class="modal-trigger"><img class="circle" src="" data-fb-profile-image /></a>
+            <a href="#account" class="modal-trigger"><span class="white-text name" data-fb-user></span></a>
+            <a href="#account" class="modal-trigger"><span class="white-text email" data-fb-email></span></a>
+          </div>
+        </li>
+        <li><a class="subheader">Lists</a></li>
         <li><a href="#!list/watching/1" data-fb-login-required>Watching</a></li>
         <li><a href="#!list/latest/1">Latest</a></li>
         <li><a href="#!list/popular/1">Popular</a></li>
+        <li><div class="divider"></div></li>
+        <li><a class="subheader">Account</a></li>
         <li class="group-login"><a href="#login" class="modal-trigger">Login / Register</a></li>
+        <li><div class="divider"></div></li>
+        <li><a class="subheader">6.0<span class="grey-text" data-gh-commit-short></span></a></li>
       </ul>
       <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
     </div>
@@ -184,7 +202,7 @@
         <li><a class="btn-floating pink lighten-2 tooltipped infoMarkFavorites" data-position="top" data-delay="50" data-tooltip="Add to favorites"><i class="material-icons">favorite</i></a></li>
         <li><a class="btn-floating amber darken-2 tooltipped infoMarkWatching" data-position="top" data-delay="50" data-tooltip="Bookmark"><i class="material-icons">bookmark</i></a></li>
         <li><a class="btn-floating green tooltipped infoMarkCompleted" data-position="top" data-delay="50" data-tooltip="Mark as watched"><i class="material-icons">done</i></a></li>
-        <li><a class="btn-floating light-blue lighten-4 tooltipped" data-position="top" data-delay="50" data-tooltip="Write a review"><i class="material-icons">mode_edit</i></a></li>
+        <li><a class="btn-floating light-blue lighten-4 tooltipped modal-trigger" data-position="top" data-delay="50" data-tooltip="Write a review" href="#editor"><i class="material-icons">mode_edit</i></a></li>
       </ul>
     </div>
 
@@ -360,6 +378,20 @@
     </div>
   </div>
 
+
+  <div id="editor" class="modal modal-fixed-footer">
+    <div class="modal-content white black-text">
+      <div class="row">
+        <div class="col s12 m6">
+          <textarea id="editor-text"></textarea>
+        </div>
+        <div class="col s12 m6">
+          <div id="editor-res"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="mediaPlayer" class="modal">
     <div class="modal-content white black-text">
       <p>
@@ -383,6 +415,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
   <script src="https://vjs.zencdn.net/5.19/video.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropper/3.1.4/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.17/marked.min.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="js/latenight.js"></script>
   <script src="js/firebase.js"></script>

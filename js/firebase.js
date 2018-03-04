@@ -20,17 +20,20 @@ var elsDisplayProfileImage = $("[data-fb-profile-image]");
 var elsDisplayEmail = $("[data-fb-email]");
 var elsRequireLogin = $("[data-fb-login-required]");
 var elsRequireEmailVerification = $("[data-fb-email-verification-required]");
+var elsVisibleLogin = $("[data-fb-login-visible]");
 
 firebase.auth().onAuthStateChanged(function(user) {
   if (user) {
     if (user.isAnonymous) {
       console.log("auth success (anon)", user);
       fbLoggedIn = false;
+      elsVisibleLogin.hide();
     }
     else {
       console.log("auth success", user);
       fbHookSignedIn();
       fbLoggedIn = true;
+      elsVisibleLogin.show();
     }
     fbUser = user;
     fbFillUser(user);
@@ -43,6 +46,7 @@ firebase.auth().onAuthStateChanged(function(user) {
   }
   else {
     if (fbUser == false) {
+      elsVisibleLogin.hide();
       console.log("auth fail - now using anon login");
       firebase.auth().signInAnonymously().catch(function(error) {
         console.log("anon auth fail");

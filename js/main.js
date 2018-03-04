@@ -22,6 +22,11 @@ $(function(){
   //lnDoGenerateListing(lnListingType);
   lnDoRefresh();
   ghDoRequest();
+  $("#editor-text").on("keyup", function() {
+    var html = marked($(this).val());
+    console.log(html);
+    $("#editor-res").html(html);
+  });
 });
 
 // First, checks if it isn't implemented yet.

@@ -165,4 +165,5 @@ var ghProcRequest = function(data) {
   var message = data[0].commit.message;
   var timeSince = moment(data[0].commit.author.date).fromNow();
   $("[data-gh-commit]").html("-{0} <a href='{2}'>{1}</a> {3}".format(hash, message, data[0].html_url, timeSince));
+  $("[data-gh-commit-short]").text("-{0} ({1})".format(hash, timeSince));
 };

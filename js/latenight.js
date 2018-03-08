@@ -149,7 +149,7 @@ var lnDoGenerateListingStats = function() {
     return -aVal.localeCompare(bVal);
   });
 
-  lnDoGeneratePosters();
+  lnDoGenerateStatsPosters();
 };
 var lnDoGenerateListingWatching = function() {
   if (!fbCachedWatchingList) {
@@ -206,6 +206,25 @@ var lnDoGenerateListingAlphabet = function() {
   lnDoGeneratePosters();
 };
 
+var lnDoGenerateStatsPosters = function() {
+  lnDoGenerateListingContainer();
+  //var lnSlice = lnSorted.slice(lnStart, lnStart + lnLimit);
+  for (var i in lnSorted) { // don't paginate.
+    var blob = lnSorted[i];
+    blob.stats = fbCachedStatsList[blob.titleSlug];
+    //lnLog(i, blob);
+    lnDoGeneratePoster(blob);
+  }
+
+  $(".tooltipped").tooltip({delay: 50});
+  $masonryGrid.imagesLoaded().progress(function() {
+    $masonryGrid.masonry("layout");
+  });
+
+  lnStart = Math.min(lnStart + lnLimit, lnCache.length);
+  fbProcAdapterList();
+  //lnDoGeneratePagination();
+};
 var lnDoGeneratePosters = function() {
   lnDoGenerateListingContainer();
   var lnSlice = lnSorted.slice(lnStart, lnStart + lnLimit);
@@ -230,9 +249,29 @@ var lnDoGeneratePoster = function(blob) {
 
   var details = "<ul class='collection'>" + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
-    "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status) + 
-    "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>done</i></a></div></li>".format(blob.titleSlug) + 
-  "</ul>";
+    "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status);
+
+  if (typeof blob.stats == "object") {
+    var favorite = "";
+    var bookmark = "";
+    var watched = "";
+    var name = fbCachedStatsName ? fbCachedStatsName : "";
+    if (blob.stats.favorite) {
+      favorite = "pink-text";
+    }
+    if (blob.stats.bookmarked) {
+      bookmark = "amber-text";
+    }
+    if (blob.stats.completed) {
+      watched = "green-text";
+    }
+    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4'><a href='#' class='{0} tooltipped' data-tooltip='{3} likes this' data-tooltip-stats-name><i class='material-icons'>favorite</i></a></div><div class='col s4'><a href='#' class='{1} tooltipped' data-tooltip='{3} bookmarked this' data-tooltip-stats-name><i class='material-icons'>bookmark</i></a></div><div class='col s4'><a href='#' class='{2} tooltipped' data-tooltip='{3} watched this' data-tooltip-stats-name><i class='material-icons'>check_circle</i></a></div></li>".format(favorite, bookmark, watched, name);
+  }
+  else {
+    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>check_circle</i></a></div></li>".format(blob.titleSlug);
+  }
+
+  details += "</ul>";
 
   var poster =
     "<div class='col s6 l4 xl3 grid'>" +

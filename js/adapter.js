@@ -1,6 +1,7 @@
 var fbCachedWatchingList = false;
 var fbCachedStatsList = false;
 var fbCachedTrackingList = false;
+var fbCachedStatsName = false;
 
 var fbInitHandlers = function() {
   console.log("init fb handlers");
@@ -124,7 +125,12 @@ var fbMarkValue = function(e) {
 
 var fbAdapterReceiveUserData = function(snapshot) {
   var data = snapshot.val();
+  fbCachedStatsName = data.displayName;
   elListingTitle.text("{0}'s List".format(data.displayName));
+  $("[data-tooltip-stats-name]").each(function() {
+    $(this).attr("data-tooltip", fbCachedStatsName + $(this).attr("data-tooltip"));
+  });
+  $("[data-tooltip-stats-name]").tooltip({delay: 50});
 };
 
 var fbAdapterTrackingList = function(snapshot) {

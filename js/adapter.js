@@ -12,24 +12,26 @@ var fbInitHandlers = function() {
     $("body").on("click", ".infoMarkWatching", fbMarkValue);
     $("body").on("click", ".infoMarkCompleted", fbMarkValue);
   }
+  // qTriggerFirebaseLoaded(); should be called in fbAdapterWatchingList
 };
 
 var fbAdapterWatchingList = function(snapshot) {
   var data = snapshot.val();
-  console.log("watching list", data);
+  console.log("watching list - fbAdapterWatchingList", data);
   if (data !== null) {
     fbCachedWatchingList = data;
+    fbProcAdapterList();
+    qTriggerFirebaseLoaded(); // only call trigger now.
   }
-
-  fbProcAdapterList();
 };
 var fbAdapterStatsList = function(snapshot) {
   var data = snapshot.val();
-  console.log("watching list", data);
   if (data !== null) {
+    console.log("watching list - fbAdapterStatsList", data);
     fbCachedStatsList = data;
+    qTriggerFirebaseLoaded(); // re-trigger
   }
-  lnProcQueue();
+  //lnProcQueue();
 };
 
 var fbProcAdapterList = function() {

@@ -43,6 +43,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     Materialize.Toast.removeAll();
     fbReady = true;
     fbSyncData();
+    //qTriggerFirebaseLoaded(); // should be in fbInitHandlers();
   }
   else {
     if (fbUser == false) {

@@ -27,7 +27,39 @@ $(function(){
     console.log(html);
     $("#editor-res").html(html);
   });
+
+  //elLoader.attr("aria-hidden", "false");
+  qWaitAllLoaded(hideLoader);
 });
+var showLoader = function(noAutoLoad) {
+  if (loaderStatus == 1) {
+    elLoader.attr("aria-hidden", "false");
+    if (typeof noAutoLoad == "boolean" && noAutoLoad) {
+      loaderStatus = 2;
+      return;
+    }
+    loaderStatus = 0;
+    qWaitAllLoaded(hideLoader);
+  }
+};
+var showLoaderForce = function() {
+  showLoader(true);
+};
+var hideLoader = function(force) {
+  if (loaderStatus == 0 || (typeof force == "boolean" && force)) {
+    loaderStatus = 1;
+    elLoader.attr("aria-hidden", "true");
+  }
+};
+var hideLoaderForce = function() {
+  hideLoader(true);
+};
+var loaderStatus = 0;
+/*
+0 = shown
+1 = hidden
+2 = shown (forced)
+ */
 
 // First, checks if it isn't implemented yet.
 // @https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format

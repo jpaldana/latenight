@@ -19,6 +19,7 @@ var elPagination = $("#pagination");
 var elInfo = $("#info");
 var elSeasons = $("#seasons");
 var elEpisodes = $("#episodes");
+var elLoader = $("#loader");
 
 var elsActiveTitle = $("[data-ln-active-title]");
 var elsActivePoster = $("[data-ln-active-poster]");
@@ -30,13 +31,20 @@ var $masonryGrid;
 var $masonryEpisodeGrid;
 var videojsPlayer;
 
+/*
 var lnTimer = function() {
+  console.log("*** DEPRECATED - lnTimer called");
+  return;
   if (lnQueue.length > 0) {
     lnProcQueue();
   }
 };
+*/
 
+/*
 var lnFnQueue = function(fn) {
+  console.log("*** DEPRECATED - lnFnQueue called");
+  return;
   // don't allow dupes
   for (var i in lnQueue) {
     var qfn = lnQueue[i];
@@ -48,6 +56,7 @@ var lnFnQueue = function(fn) {
   lnQueue.push(fn);
   lnLog("* pushing fn to queue", fn.name);
 };
+*/
 
 var lnLog = function(text) {
   var stack = [];
@@ -56,7 +65,11 @@ var lnLog = function(text) {
   }
   console.log.apply(null, stack);
 };
+
+/*
 var lnProcQueue = function() {
+  console.log("*** DEPRECATED - lnProcQueue called");
+  return;
   if (lnQueue.length > 0) {
     //while (lnQueue.length > 0) {
     for (var i = 0; i < lnQueue.length; i++) {
@@ -71,6 +84,7 @@ var lnProcQueue = function() {
     }
   }
 };
+*/
 
 var lnDoRefresh = function() {
   $.get(SonarrEndpoint, lnProcRefresh);
@@ -78,8 +92,9 @@ var lnDoRefresh = function() {
 
 var lnProcRefresh = function(data) {
   lnCache = data;
-  lnReady = true;
-  lnProcQueue();
+  //lnReady = true;
+  //lnProcQueue();
+  qTriggerLatenightLoaded();
 };
 
 var lnDoGenerateListing = function(type) {
@@ -105,13 +120,17 @@ var lnDoGenerateListing = function(type) {
   }
   if (typeof fn == "function") {
     lnListingType = type;
+    qWaitLatenightLoaded(fn);
+    /*
     if (!lnReady) {
-      lnFnQueue(fn);
+      //lnFnQueue(fn);
+      qWaitLatenightLoaded(fn);
       return;
     }
     else {
       fn();
     }
+    */
   }
   else {
     lnLog("lnDoGenerateListing: unknown type", type, typeof fn);
@@ -127,14 +146,19 @@ var lnDoGenerateListingContainer = function() {
 };
 var lnDoGenerateListingStats = function() {
   if (!fbCachedStatsList) {
-    lnQueue.push(lnDoGenerateListingStats);
-    lnLog("deferring stats listing");
+    //lnQueue.push(lnDoGenerateListingStats);
+    //lnLog("deferring stats listing");
+    qFirebaseLoaded = false;
+    qWaitAllLoaded(lnDoGenerateListingStats);
     return;
   }
 
   lnSorted = [];
   for (var slug in fbCachedStatsList) {
     var watchingBlob = fbCachedStatsList[slug];
+    if (!watchingBlob.bookmarked) {
+      continue;
+    }
     for (var i in lnCache) {
       var blob = lnCache[i];
       if (blob.titleSlug == slug) {
@@ -217,9 +241,10 @@ var lnDoGenerateStatsPosters = function() {
   }
 
   $(".tooltipped").tooltip({delay: 50});
+  showLoader(true);
   $masonryGrid.imagesLoaded().progress(function() {
     $masonryGrid.masonry("layout");
-  });
+  }).always(hideLoaderForce);
 
   lnStart = Math.min(lnStart + lnLimit, lnCache.length);
   fbProcAdapterList();
@@ -235,9 +260,10 @@ var lnDoGeneratePosters = function() {
   }
 
   $(".tooltipped").tooltip({delay: 50});
+  showLoader(true);
   $masonryGrid.imagesLoaded().progress(function() {
     $masonryGrid.masonry("layout");
-  });
+  }).always(hideLoaderForce);
 
   lnStart = Math.min(lnStart + lnLimit, lnCache.length);
   fbProcAdapterList();
@@ -442,9 +468,10 @@ var lnDoGenerateEpisodes = function() {
     }
   }
 
+  showLoader(true);
   $masonryEpisodeGrid.imagesLoaded().progress(function() {
     $masonryEpisodeGrid.masonry("layout");
-  });
+  }).always(hideLoaderForce);
   $masonryEpisodeGrid.masonry("reloadItems");
   $(".tooltipped").tooltip({delay: 50});
 
@@ -478,10 +505,13 @@ var lnApiImage = function(blob, type) {
 };
 
 var lnProcHash = function(e) {
+  // lnProcHash should only be called within qAllLoaded, ignore checks.
+  /*
   if (!lnReady || !fbReady) {
-    lnFnQueue(lnProcHash);
+    //lnFnQueue(lnProcHash);
     return;
   }
+  */
   var target;
   if (typeof e == "undefined") {
     target = location.hash;
@@ -505,6 +535,10 @@ var lnProcHash = function(e) {
   if (target.length == 2) {
     // handle #! as do nothing links
     console.log("doing nothing", target);
+    return;
+  }
+  if (target == lnHashCache) {
+    console.log("suppressing repeated lnProcHash call");
     return;
   }
 
@@ -606,12 +640,13 @@ var lnProcGdriveFile = function(data) {
   });
 };
 
-//$("body").on("click", "a[href^='#!']", lnProcHash);
-$("body").on("click", "a[data-file]", lnProcFile);
+$("body").on("click", "a[href^='#!']", lnProcHash);
+$("body").on("click", "a[data-file]", qLnProcHash);
 elSeasons.on("change", lnDoGenerateEpisodes);
 $(function() {
   if (location.hash.length > 0) {
-    lnQueue.push(lnProcHash);
+    //lnQueue.push(lnProcHash);
+    qLnProcHash();
   }
   $masonryGrid = elPosters.masonry({
     itemSelector: ".grid",
@@ -627,10 +662,11 @@ $(function() {
   });
   $("select").material_select();
   videojsPlayer = videojs("media-player");
-  setInterval(lnTimer, 1000);
+  //setInterval(lnTimer, 1000);
 });
 
 window.onhashchange = function() {
   console.log("hash change");
-  lnProcHash();
+  //lnProcHash();
+  qLnProcHash();
 };

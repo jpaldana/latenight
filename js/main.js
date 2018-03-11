@@ -4,6 +4,7 @@ var SonarrSeasonEndpoint = "https://dev6-api.latenight.moe/latenight/api.php?end
 var SonarrMediaEndpoint = "https://dev6-api.latenight.moe/latenight-media/index.php?host=sonarr&request=";
 var RadarrMediaEndpoint = "https://dev6-api.latenight.moe/latenight-media/index.php?host=radarr&request=";
 var SonarrEpisodeEndpoint = "https://dev6-api.latenight.moe/twilight/Thumbnail.php?host=sonarr&id=";
+var RadarrMovieEndpoint = "https://dev6-api.latenight.moe/twilight/Thumbnail.php?host=radarr&id=";
 var LatenightApiEndpoint = "https://dev6-api.latenight.moe/api.php";
 var TwilightApiEndpoint = "https://dev6-api.latenight.moe/twilight/Subtitle.php?host=sonarr&id=";
 var GithubApiEndpoint = "https://api.github.com/repos/jpaldana/latenight/commits?per_page=1";

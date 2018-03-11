@@ -19,6 +19,7 @@ var elPosters = $("#posters");
 var elPagination = $("#pagination");
 var elInfo = $("#info");
 var elSeasons = $("#seasons");
+var elSeasonsContainer = $("#seasons-container");
 var elEpisodes = $("#episodes");
 var elLoader = $("#loader");
 var elLoaderText = $("#loader-text");
@@ -142,10 +143,10 @@ var lnDoGenerateListing = function(type) {
 
 var lnDoGenerateListingContainer = function() {
   $masonryGrid.masonry("remove", $masonryGrid.find(".col"));
-  elWelcome.hide();
+  elWelcome.attr("aria-hidden", "true");
   elPosters.empty();
   elPagination.empty();
-  elListing.show();
+  elListing.attr("aria-hidden", "false");
 };
 var lnDoGenerateListingStats = function() {
   if (!fbCachedStatsList) {
@@ -357,10 +358,18 @@ var lnDoGenerateInfo = function(slug) {
   elsActiveOverview.text(blob.overview);
   elSeasons.empty();
   elSeasons.append("<option value='' disabled selected>Choose a season</option>");
-  if (blob.tmdbId == "number") {
+  if (typeof blob.tmdbId == "number") {
     // movie stuff
+    elSeasonsContainer.attr("aria-hidden", "true");
+    elEpisodes.empty().css("height", "0");
+    lnDoGenerateMovieEpisode(blob);
+    $masonryEpisodeGrid.imagesLoaded().progress(function() {
+      $masonryEpisodeGrid.masonry("layout");
+    }).always(hideLoaderForce);
+    $masonryEpisodeGrid.masonry("reloadItems");
   }
   else {
+    elSeasonsContainer.attr("aria-hidden", "false");
     for (var i in blob.seasons) {
       var season = blob.seasons[i];
       var seasonTitle = "Season {0}".format(season.seasonNumber);
@@ -380,11 +389,12 @@ var lnDoGenerateInfo = function(slug) {
         season.statistics.totalEpisodeCount
       ));
     }
+    elSeasons.material_select();
+    lnDoGenerateSeason(blob.id);
+    elEpisodes.empty().css("height", "0");
+    $masonryEpisodeGrid.masonry("reloadItems");
   }
-  elSeasons.material_select();
-  lnDoGenerateSeason(blob.id);
-  elEpisodes.empty().css("height", "0");
-  $masonryEpisodeGrid.masonry("reloadItems");
+
   // genres
   elsActiveGenres.empty();
   for (var i in blob.genres) {
@@ -392,6 +402,72 @@ var lnDoGenerateInfo = function(slug) {
     elsActiveGenres.append("<div class='chip'>{0}</div> ".format(genre));
   }
 };
+
+var lnDoGenerateMovieEpisode = function(blob) {
+  var thumbnail = RadarrMovieEndpoint + blob.id;
+  var title = blob.title;
+
+  var timeAgo = "not yet released";
+  if (typeof blob.inCinemas == "string") {
+    timeAgo = moment(blob.inCinemas).fromNow();
+  }
+  var epStatus = "not available";
+  var direct = "#!";
+  if (blob.hasFile) {
+    epStatus = "{0} / {1}".format(blob.movieFile.quality.quality.name, bytesToSize(blob.movieFile.size));
+    if (fbLoggedIn && !fbUser.isAnonymous) {
+      direct = MeiEndpoint + blob.path + "/" + blob.movieFile.relativePath;
+    }
+  }
+  var episodeId = "m";
+  var details = "<ul class='collection'>" + 
+    "<li class='collection-item ellipsis tooltipped' data-tooltip=\"{0}\">{0}</li>".format(title) + 
+    "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
+    "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>equalizer</i></a></div></li>".format(epStatus);
+  if (blob.hasFile) {
+    details += "<li class='collection-item center row'><div class='col s6 m4'><a href=\"{0}\" class='tooltipped infoTrackEpisodeOneWay' data-episode='{1}' data-tooltip='Direct Link'><i class='material-icons'>link</i></a></div><div class='col s6 m4'><a href='#' class='infoTrackEpisode tooltipped' data-tooltip='Mark as watched' data-episode='{1}'><i class='material-icons'>visibility</i></a></div><div class='col m4 hide-on-small-only'><a href='#' class='infoGroupWatch tooltipped' data-tooltip='Watch with others' data-episode='{1}'><i class='material-icons'>group</i></a></div></li>".format(direct, episodeId);
+  }
+  else {
+    details += "<li class='collection-item'>&mdash;</li>";
+  }
+  details += "</ul>";
+
+  if (!blob.hasFile) {
+    thumbnail = "img/blank-episode.jpg";
+    var poster =
+      "<div class='col s12 m6 l6 xl4 grid'>" +
+        "<div class='card'>" +
+          "<div class='card-image'>" +
+            "<img src='{0}'>".format(thumbnail) +
+            "<a class='btn-floating middle-fab waves-effect waves-light red lighten-2 z-depth-2'><i class='material-icons'>close</i></a>" +
+          "</div>" +
+          "<div class='card-content'>" +
+            "{0}".format(details) +
+          "</div>" +
+        "</div>" +
+      "</div>";
+  }
+  else {
+    var poster =
+      "<div class='col s12 m6 l6 xl4 grid'>" +
+        "<div class='card'>" +
+          "<div class='card-image'>" +
+            "<img src='{0}' class='activator'>".format(thumbnail) +
+            "<a class='btn-floating middle-fab waves-effect waves-light light-blue lighten-2 z-depth-2 infoTrackEpisodeOneWay' data-direct-file=\"{0}\" data-direct-poster=\"{1}\" href='#!' data-fb-login-required data-ignore-hash><i class='material-icons'>play_arrow</i></a>".format(direct, thumbnail) +
+          "</div>" +
+          "<div class='card-content'>" +
+            "{0}".format(details) +
+          "</div>" +
+          "<div class='card-reveal scroll'>" +
+            "<span class='card-title white black-text'>{0}<i class='material-icons right'>close</i></span>".format(title) +
+            "<p>{0}</p>".format(blob.overview) +
+          "</div>" +
+        "</div>" +
+      "</div>";
+  }
+
+  elEpisodes.append(poster);
+}
 
 var lnDoGenerateSeason = function(id) {
   $.post(SonarrSeasonEndpoint, {id: id}, lnProcGenerateSeason);
@@ -615,6 +691,11 @@ var lnProcHash = function(e) {
       kaLoadGroupWatch(hash[0], hash[1], hash[2]);
       console.log("group triggered");
     break;
+    case "main":
+      elWelcome.attr("aria-hidden", "false");
+      elInfo.attr("aria-hidden", "true");
+      elListing.attr("aria-hidden", "true");
+    break;
   }
 
   //lnHashCache = target;
@@ -684,8 +765,38 @@ var lnProcGdriveFile = function(data) {
   hideLoaderForce();
 };
 
+var lnProcDirectFile = function(e) {
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    Materialize.toast("You must be logged in to do this action.", 2000);
+    return;
+  }
+  e.preventDefault();
+  Materialize.toast("Notice: Some movies may not play in a browser");
+
+  $("#mediaPlayer").modal("open");
+  var srcs = [
+    { src: $(this).attr("data-direct-file"), type: "video/mp4" }
+  ];
+  videojsPlayer.poster($(this).attr("data-direct-poster"));
+  videojsPlayer.src(srcs);
+  // remove prior text tracks
+  if (videojsPlayer.remoteTextTracks().length > 0) {
+    videojsPlayer.removeRemoteTextTrack(videojsPlayer.remoteTextTracks().tracks_[0]);
+  }
+
+  videojsPlayer.addRemoteTextTrack({
+    kind: "captions",
+    srclang: "en",
+    label: "English",
+    src: TwilightApiEndpoint + lnAwaitFileId,
+    manualCleanup: true
+  });
+  hideLoaderForce();
+}
+
 $("body").on("click", "a[href^='#!']", lnProcHash);
 $("body").on("click", "a[data-file]", lnProcFile);
+$("body").on("click", "a[data-direct-file]", lnProcDirectFile);
 elSeasons.on("change", lnDoGenerateEpisodes);
 $(function() {
   if (location.hash.length > 0) {

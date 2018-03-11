@@ -20,6 +20,10 @@ var kaDoGroupWatch = function(e) {
   location.hash = hash;
 };
 var kaLoadGroupWatch = function(groupId, titleSlug, episodeId) {
+  // reset
+  elGroupUsers.empty();
+  elGroupChatContainer.empty();
+
   Materialize.toast("Entering group instance...", 2000);
   elGroup.attr("aria-hidden", "false");
   elBody.addClass("noscroll");

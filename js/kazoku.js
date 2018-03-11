@@ -1,6 +1,7 @@
 var elGroup = $("#group");
 var elGroupChatMessage = $("#group-chat-message");
 var elGroupChatContainer = $("#chat-container");
+var elGroupUsers = $("#group-users");
 
 var elsGroupTitle = $("[data-group-title]");
 
@@ -12,6 +13,7 @@ var kaDoGroupWatch = function(e) {
   e.preventDefault();
   Materialize.toast("Creating group instance...", 2000);
   var group = fbUser.uid; //"g0test";
+  kaFbResetRoom(group);
   var hash = "#!group/{0}/{1}/{2}".format(group, lnActiveInfo.titleSlug, $(this).attr("data-episode"));
   lnLog("group hash", hash);
   //kaLoadGroupWatch(group, lnActiveInfo.titleSlug, $(this).attr("data-episode"));
@@ -52,6 +54,16 @@ var kaPushGroupChatMessage = function(sender, message) {
 };
 var kaPullGroupChatMessage = function(data) {
   kaProcGroupChatMessage(data.sender, data.message, data.lastSync);
+};
+var kaPullGroupStatusMessage = function(data) {
+  kaProcGroupStatusMessage(data.sender, data.event, data.lastSync, data.currentTime);
+};
+var kaPullGroupHeartbeatMessage = function(data) {
+  console.log("data", data);
+  for (var i in data) {
+    var dat = data[i];
+    kaProcGroupHeartbeatMessage(dat.sender, dat.event, dat.lastSync);
+  }
 };
 
 var kaProcGroupChatMessage = function(senderUid, message, lastSync) {
@@ -145,19 +157,18 @@ var kaHookEvents = function() {
 var kaEventUserPlayPause = function() {
   if (groupVideojsPlayer.paused()) {
     console.log("[user] pause");
-    kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "pause", "control");
+    kaFbPushGroupStatusMessage(kaGroupId, fbUser.uid, "pause", groupVideojsPlayer.currentTime());
   }
   else {
     console.log("[user] play");
-    kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "play", "control");
+    kaFbPushGroupStatusMessage(kaGroupId, fbUser.uid, "play", groupVideojsPlayer.currentTime());
   }
 };
 var kaEventUserSeeked = function() {
-  var timeSeek = $("#group-media-player .vjs-mouse-display").attr("data-current-time");
-
-  kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "seek={0}".format(timeSeek), "control");
-  console.log("[user] {0}".format(timeSeek))
+  console.log("[user] {0}".format(groupVideojsPlayer.currentTime()))
+  kaFbPushGroupStatusMessage(kaGroupId, fbUser.uid, "seek", groupVideojsPlayer.currentTime());
 };
+/*
 var kaPullEvent = function(data) {
   kaProcEvent(data.sender, data.message, data.lastSync);
 };
@@ -176,18 +187,20 @@ var kaProcEvent = function(senderUid, event, lastSync) {
   }
   console.log("recv event", senderUid, event, lastSync);
 };
+*/
 var kaEventPlayerCanPlay = function() {
-  //kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "canplay", "status");
+  kaFbPushGroupHeartbeatMessage(kaGroupId, fbUser.uid, "canplay");
 };
 var kaEventPlayerPlaying = function() {
-  //kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "playing", "status");
+  kaFbPushGroupHeartbeatMessage(kaGroupId, fbUser.uid, "playing");
 };
 var kaEventPlayerPaused = function() {
-  //kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "paused", "status");
+  kaFbPushGroupHeartbeatMessage(kaGroupId, fbUser.uid, "paused");
 };
 var kaEventPlayerPlay = function() {
-  //kaFbPushGroupChatMessage(kaGroupId, fbUser.uid, "play", "status");
+  kaFbPushGroupHeartbeatMessage(kaGroupId, fbUser.uid, "play");
 };
+/*
 var kaPullStatus = function(data) {
   kaProcStatus(data.sender, data.message, data.lastSync);
 };
@@ -206,6 +219,61 @@ var kaProcStatus = function(senderUid, event, lastSync) {
     break;
   }
   console.log("recv event", senderUid, event, lastSync);
+};
+*/
+
+var kaProcGroupStatusMessage = function(senderUid, event, lastSync, currentTime) {
+  console.log("receive event", event);
+  switch (event) {
+    case "play":
+      if (groupVideojsPlayer.paused()) {
+        groupVideojsPlayer.play();
+      }
+    break;
+    case "pause":
+      groupVideojsPlayer.pause();
+      //groupVideojsPlayer.currentTime(currentTime);
+    break;
+    case "seek": // @
+      groupVideojsPlayer.pause();
+      groupVideojsPlayer.currentTime(currentTime);
+    break;
+  }
+};
+var kaProcGroupHeartbeatMessage = function(senderUid, event, lastSync) {
+  var target = $("#group-users div[data-user='{0}']".format(senderUid));
+  if (target.length == 0) {
+    var sender = "Unknown User";
+    var photoURL = "img/blank-episode.jpg";
+    if (typeof senderUid == "string" && typeof fbCachedUsersList[senderUid] == "object") {
+      sender = fbCachedUsersList[senderUid].displayName;
+      if (fbCachedUsersList[senderUid].photoURL) {
+        photoURL = fbCachedUsersList[senderUid].photoURL;
+      }
+    }
+
+    elGroupUsers.append("<div class='chip grey darken-4 white-text' data-user='{2}'><img src='{1}' alt='{0}' />{0} <span class='group-status-text'></span></div>".format(sender, photoURL, senderUid));
+  }
+
+  var status = event;
+  var color = "green-text";
+  switch (event) {
+    case "canplay":
+      status = "ready";
+    break;
+    case "playing":
+      status = "playing";
+    break;
+    case "paused":
+      status = "paused";
+      color = "amber-text";
+    break;
+    case "play":
+      //status = "<i class='material-icons'>play_arrow</i>";
+      return;
+    break;
+  }
+  $("#group-users div[data-user='{0}'] .group-status-text".format(senderUid)).text(status).removeClass("green-text amber-text").addClass(color);
 };
 
 $("body").on("click", ".infoGroupWatch[data-episode]", kaDoGroupWatch);

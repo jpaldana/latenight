@@ -193,8 +193,15 @@ var ghProcRequest = function(data) {
   $("[data-gh-commit-short]").text("-{0} ({1})".format(hash, timeSince));
 };
 
+var kaFbResetRoom = function(groupId) {
+  var prefixString = "group/" + groupId;
+  var data = {};
+
+  data[prefixString] = null;
+  fbDatabase.ref().update(data);
+};
 var kaFbPushGroupChatMessage = function(groupId, sender, message, type) {
-  var prefixString = "group-chat/" + groupId + "/";
+  var prefixString = "group/" + groupId + "/chat/";
   var data = {};
 
   data[prefixString + "sender"] = sender;
@@ -204,7 +211,9 @@ var kaFbPushGroupChatMessage = function(groupId, sender, message, type) {
   fbDatabase.ref().update(data);
 }
 var kbInitFbPullGroupChatMessage = function(groupId) {
-  fbDatabase.ref("group-chat/" + groupId).on("value", kbFbPullGroupChatMessage);
+  fbDatabase.ref("group/" + groupId + "/chat").on("value", kbFbPullGroupChatMessage);
+  fbDatabase.ref("group/" + groupId + "/status").on("value", kaFbPullGroupStatusMessage);
+  fbDatabase.ref("group/" + groupId + "/users").on("value", kaFbPullGroupHeartbeatMessage);
 };
 var kbFbPullGroupChatMessage = function(snapshot) {
   var data = snapshot.val();
@@ -212,11 +221,36 @@ var kbFbPullGroupChatMessage = function(snapshot) {
     if (data.type == "message") {
       kaPullGroupChatMessage(data);
     }
-    else if (data.type == "status") {
-      kaPullStatus(data);
-    }
-    else {
-      kaPullEvent(data);
-    }
+  }
+};
+var kaFbPushGroupStatusMessage = function(groupId, sender, status, currentTime) {
+  var prefixString = "group/" + groupId + "/status/";
+  var data = {};
+
+  data[prefixString + "sender"] = sender;
+  data[prefixString + "event"] = status;
+  data[prefixString + "currentTime"] = currentTime;
+  data[prefixString + "lastSync"] = moment().format();
+  fbDatabase.ref().update(data);
+}
+var kaFbPullGroupStatusMessage = function(snapshot) {
+  var data = snapshot.val();
+  if (data !== null) {
+    kaPullGroupStatusMessage(data);
+  }
+};
+var kaFbPushGroupHeartbeatMessage = function(groupId, sender, status) {
+  var prefixString = "group/" + groupId + "/users/" + sender + "/";
+  var data = {};
+
+  data[prefixString + "sender"] = sender;
+  data[prefixString + "event"] = status;
+  data[prefixString + "lastSync"] = moment().format();
+  fbDatabase.ref().update(data);
+}
+var kaFbPullGroupHeartbeatMessage = function(snapshot) {
+  var data = snapshot.val();
+  if (data !== null) {
+    kaPullGroupHeartbeatMessage(data);
   }
 };

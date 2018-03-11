@@ -8,6 +8,7 @@ var lnHashCache = "";
 var lnActiveInfo = false;
 var lnReady = false;
 
+var lnAwaitFilePath = false;
 var lnAwaitFileId = false;
 
 var elBody = $("body");
@@ -20,6 +21,7 @@ var elInfo = $("#info");
 var elSeasons = $("#seasons");
 var elEpisodes = $("#episodes");
 var elLoader = $("#loader");
+var elLoaderText = $("#loader-text");
 
 var elsActiveTitle = $("[data-ln-active-title]");
 var elsActivePoster = $("[data-ln-active-poster]");
@@ -30,6 +32,7 @@ var elsActiveGenres = $("[data-ln-active-genres]");
 var $masonryGrid;
 var $masonryEpisodeGrid;
 var videojsPlayer;
+var groupVideojsPlayer;
 
 /*
 var lnTimer = function() {
@@ -242,6 +245,7 @@ var lnDoGenerateStatsPosters = function() {
 
   $(".tooltipped").tooltip({delay: 50});
   showLoader(true);
+  textLoader("Loading posters...");
   $masonryGrid.imagesLoaded().progress(function() {
     $masonryGrid.masonry("layout");
   }).always(hideLoaderForce);
@@ -261,6 +265,7 @@ var lnDoGeneratePosters = function() {
 
   $(".tooltipped").tooltip({delay: 50});
   showLoader(true);
+  textLoader("Loading posters...");
   $masonryGrid.imagesLoaded().progress(function() {
     $masonryGrid.masonry("layout");
   }).always(hideLoaderForce);
@@ -271,30 +276,37 @@ var lnDoGeneratePosters = function() {
 };
 var lnDoGeneratePoster = function(blob) {
   var thumbnail = lnApiImage(blob, "poster").replace("poster.jpg", "poster-500.jpg");
-  var timeAgo = moment(blob.previousAiring).fromNow();
+  var timeAgo = typeof blob.previousAiring == "string" ? moment(blob.previousAiring).fromNow() : (typeof blob.inCinemas == "string" ? moment(blob.inCinemas).fromNow() : "&mdash;");
+  var mediaType = typeof blob.tmdbId == "number" ? " (movie)" : " (series)";
 
   var details = "<ul class='collection'>" + 
     "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
-    "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status);
+    "<li class='collection-item'><div>{0}{1}<a class='secondary-content'><i class='material-icons'>date_range</i></a></div></li>".format(blob.status, mediaType);
 
   if (typeof blob.stats == "object") {
     var favorite = "";
     var bookmark = "";
     var watched = "";
+    var favorite_tt = "'";
+    var bookmark_tt = "'";
+    var watched_tt = "'";
     var name = fbCachedStatsName ? fbCachedStatsName : "";
     if (blob.stats.favorite) {
       favorite = "pink-text";
+      favorite_tt = " tooltipped' data-tooltip='{0} likes this' data-tooltip-stats-name".format(name);
     }
     if (blob.stats.bookmarked) {
       bookmark = "amber-text";
+      bookmark_tt = " tooltipped' data-tooltip='{0} bookmarked this' data-tooltip-stats-name".format(name);
     }
     if (blob.stats.completed) {
       watched = "green-text";
+      watched_tt = " tooltipped' data-tooltip='{0} watched this' data-tooltip-stats-name".format(name);
     }
-    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4'><a href='#' class='{0} tooltipped' data-tooltip='{3} likes this' data-tooltip-stats-name><i class='material-icons'>favorite</i></a></div><div class='col s4'><a href='#' class='{1} tooltipped' data-tooltip='{3} bookmarked this' data-tooltip-stats-name><i class='material-icons'>bookmark</i></a></div><div class='col s4'><a href='#' class='{2} tooltipped' data-tooltip='{3} watched this' data-tooltip-stats-name><i class='material-icons'>check_circle</i></a></div></li>".format(favorite, bookmark, watched, name);
+    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4'><a href='#!' class='{0}{3}><i class='material-icons'>favorite</i></a></div><div class='col s4'><a href='#!' class='{1}{4}><i class='material-icons'>bookmark</i></a></div><div class='col s4'><a href='#!' class='{2}{5}><i class='material-icons'>check_circle</i></a></div></li>".format(favorite, bookmark, watched, favorite_tt, bookmark_tt, watched_tt);
   }
   else {
-    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#' data-fb-login-required><i class='material-icons'>check_circle</i></a></div></li>".format(blob.titleSlug);
+    details += "<li class='collection-item'><div class='row center-align' style='margin-bottom: 0;'><div class='col s4 infoMarkFavorites tooltipped' data-tooltip='Add to favorites' data-title='{0}'><a href='#!' data-fb-login-required><i class='material-icons'>favorite</i></a></div><div class='col s4 infoMarkWatching tooltipped' data-tooltip='Bookmark' data-title='{0}'><a href='#!' data-fb-login-required><i class='material-icons'>bookmark</i></a></div><div class='col s4 infoMarkCompleted tooltipped' data-tooltip='Mark as watched' data-title='{0}'><a href='#!' data-fb-login-required><i class='material-icons'>check_circle</i></a></div></li>".format(blob.titleSlug);
   }
 
   details += "</ul>";
@@ -388,6 +400,7 @@ var lnDoGenerateSeason = function(id) {
 var lnProcGenerateSeason = function(data) {
   lnLog("season data", data);
   lnSeasonCache = data;
+  qTriggerLatenightLoaded();
 };
 
 var lnDoGenerateEpisodes = function() {
@@ -412,7 +425,7 @@ var lnDoGenerateEpisodes = function() {
       var direct = "#!";
       if (blob.hasFile) {
         epStatus = "{0} / {1}".format(blob.episodeFile.quality.quality.name, bytesToSize(blob.episodeFile.size));
-        direct = "https://local-media.latenight.moe" + blob.episodeFile.path;
+        direct = MeiEndpoint + blob.episodeFile.path;
       }
       var episodeId = "s{0}e{1}".format(seasonNum, blob.episodeNumber);
       var details = "<ul class='collection'>" + 
@@ -420,7 +433,7 @@ var lnDoGenerateEpisodes = function() {
         "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>update</i></a></div></li>".format(timeAgo) + 
         "<li class='collection-item'><div>{0}<a class='secondary-content'><i class='material-icons'>equalizer</i></a></div></li>".format(epStatus);
       if (blob.hasFile) {
-        details += "<li class='collection-item center row'><div class='col s6'><a href=\"{0}\" class='tooltipped' data-tooltip='Direct Link (local)'><i class='material-icons'>link</i></a></div><div class='col s6'><a href='#' class='infoTrackEpisode tooltipped' data-tooltip='Mark as watched' data-episode='{1}'><i class='material-icons'>visibility</i></a></div></li>".format(direct, episodeId);
+        details += "<li class='collection-item center row'><div class='col s6 m4'><a href=\"{0}\" class='tooltipped infoTrackEpisodeOneWay' data-episode='{1}' data-tooltip='Direct Link'><i class='material-icons'>link</i></a></div><div class='col s6 m4'><a href='#' class='infoTrackEpisode tooltipped' data-tooltip='Mark as watched' data-episode='{1}'><i class='material-icons'>visibility</i></a></div><div class='col m4 hide-on-small-only'><a href='#' class='infoGroupWatch tooltipped' data-tooltip='Watch with others' data-episode='{1}'><i class='material-icons'>group</i></a></div></li>".format(direct, episodeId);
       }
       else {
         details += "<li class='collection-item'>&mdash;</li>";
@@ -451,7 +464,7 @@ var lnDoGenerateEpisodes = function() {
             "<div class='card'>" +
               "<div class='card-image'>" +
                 "<img src='{0}' class='activator'>".format(thumbnail) +
-                "<a class='btn-floating middle-fab waves-effect waves-light light-blue lighten-2 z-depth-2' data-file=\"{0}\" data-file-id='{1}' href='#!' data-fb-login-required><i class='material-icons'>play_arrow</i></a>".format(file, blob.id) +
+                "<a class='btn-floating middle-fab waves-effect waves-light light-blue lighten-2 z-depth-2 infoTrackEpisodeOneWay' data-episode='{2}' data-file-path=\"{3}\"  data-file=\"{0}\" data-file-id='{1}' href='#!' data-fb-login-required data-ignore-hash><i class='material-icons'>play_arrow</i></a>".format(file, blob.id, episodeId, blob.episodeFile.path) +
               "</div>" +
               "<div class='card-content'>" +
                 "{0}".format(details) +
@@ -469,6 +482,7 @@ var lnDoGenerateEpisodes = function() {
   }
 
   showLoader(true);
+  textLoader("Loading episodes...");
   $masonryEpisodeGrid.imagesLoaded().progress(function() {
     $masonryEpisodeGrid.masonry("layout");
   }).always(hideLoaderForce);
@@ -478,6 +492,7 @@ var lnDoGenerateEpisodes = function() {
   // add episode watch list after page has loaded
   if (fbLoggedIn && !fbUser.isAnonymous) {
     $(".infoTrackEpisode").on("click", fbAdapterTrackEpisode);
+    $(".infoTrackEpisodeOneWay").one("click", fbAdapterTrackEpisode);
     fbDatabase.ref("tracker/" + fbUser.uid + "/" + lnActiveInfo.titleSlug).once("value").then( fbAdapterTrackingList);
   }
 };
@@ -517,6 +532,11 @@ var lnProcHash = function(e) {
     target = location.hash;
   }
   else if (typeof e == "object") {
+    if ($(this).is("[data-ignore-hash]")) {
+      // do not proc/prevent default
+      console.log("* ignore hash click");
+      return;
+    }
     target = $(this).attr("href");
     e.preventDefault();
   }
@@ -528,6 +548,7 @@ var lnProcHash = function(e) {
     }
     target = location.hash;
   }
+  console.log("lnProcHash:", target, e);
   if (target.substring(0, 2) !== "#!") {
     lnLog("ignoring non-#! href", target);
     return;
@@ -543,8 +564,8 @@ var lnProcHash = function(e) {
   }
 
   var hash = target.substring(2).replace("#", "").split("/");
-  lnLog("handle #!", hash);
 
+  console.log("lnProcHash split:", hash);
   var hashSwitch = hash.shift();
   switch (hashSwitch) {
     case "list":
@@ -570,6 +591,11 @@ var lnProcHash = function(e) {
       elBody.removeClass("noscroll");
       return;
     break;
+    case "close-group":
+      elGroup.attr("aria-hidden", "true");
+      elBody.removeClass("noscroll");
+      return;
+    break;
     case "stats":
       elInfo.attr("aria-hidden", "true");
       elBody.removeClass("noscroll");
@@ -583,9 +609,13 @@ var lnProcHash = function(e) {
       lnLog("hash: list (re)load - stats", lnListingType, lnStart);
       lnDoGenerateListing(lnListingType);
     break;
+    case "group":
+      kaLoadGroupWatch(hash[0], hash[1], hash[2]);
+      console.log("group triggered");
+    break;
   }
 
-  lnHashCache = target;
+  //lnHashCache = target;
   location.hash = target;
 };
 
@@ -607,6 +637,7 @@ var lnProcFile = function(e) {
   e.preventDefault();
 
   var file = $(this).attr("data-file");
+  lnAwaitFilePath = $(this).attr("data-file-path");
   lnAwaitFileId = $(this).attr("data-file-id");
   lnLog("proc file", file);
   $.post(LatenightApiEndpoint, {
@@ -621,11 +652,19 @@ var lnProcGdriveFile = function(data) {
 
   //$("#media").attr("poster", data.poster);
   //$("#media source").attr("src", data.file);
+  var srcs = [
+    { src: data.file, type: "video/mp4" }
+  ];
+  if (data.file == "") {
+    console.log("not on gd, use mei instead", srcs);
+    srcs = [
+      { src: MeiEndpoint + lnAwaitFilePath, type: "video/mp4" }
+    ];
+  }
+  
+  console.log("srcs", srcs);
   videojsPlayer.poster(data.poster);
-  videojsPlayer.src({
-    type: "video/mp4",
-    src: data.file
-  });
+  videojsPlayer.src(srcs);
   // remove prior text tracks
   if (videojsPlayer.remoteTextTracks().length > 0) {
     videojsPlayer.removeRemoteTextTrack(videojsPlayer.remoteTextTracks().tracks_[0]);
@@ -641,7 +680,7 @@ var lnProcGdriveFile = function(data) {
 };
 
 $("body").on("click", "a[href^='#!']", lnProcHash);
-$("body").on("click", "a[data-file]", qLnProcHash);
+$("body").on("click", "a[data-file]", lnProcFile);
 elSeasons.on("change", lnDoGenerateEpisodes);
 $(function() {
   if (location.hash.length > 0) {
@@ -662,6 +701,7 @@ $(function() {
   });
   $("select").material_select();
   videojsPlayer = videojs("media-player");
+  groupVideojsPlayer = videojs("group-media-player");
   //setInterval(lnTimer, 1000);
 });
 

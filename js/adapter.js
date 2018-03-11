@@ -1,6 +1,7 @@
 var fbCachedWatchingList = false;
 var fbCachedStatsList = false;
 var fbCachedTrackingList = false;
+var fbCachedUsersList = false;
 var fbCachedStatsName = false;
 
 var fbInitHandlers = function() {
@@ -8,6 +9,7 @@ var fbInitHandlers = function() {
 
   if (fbUser && fbDatabase) {
     fbDatabase.ref("watching/" + fbUser.uid).on("value", fbAdapterWatchingList);
+    fbDatabase.ref("users").on("value", fbAdapterUsersList);
     $("body").on("click", ".infoMarkFavorites", fbMarkValue);
     $("body").on("click", ".infoMarkWatching", fbMarkValue);
     $("body").on("click", ".infoMarkCompleted", fbMarkValue);
@@ -15,14 +17,20 @@ var fbInitHandlers = function() {
   // qTriggerFirebaseLoaded(); should be called in fbAdapterWatchingList
 };
 
+var fbAdapterUsersList = function(snapshot) {
+  var data = snapshot.val();
+  if (data !== null) {
+    fbCachedUsersList = data;
+  }
+};
 var fbAdapterWatchingList = function(snapshot) {
   var data = snapshot.val();
   console.log("watching list - fbAdapterWatchingList", data);
   if (data !== null) {
     fbCachedWatchingList = data;
     fbProcAdapterList();
-    qTriggerFirebaseLoaded(); // only call trigger now.
   }
+  qTriggerFirebaseLoaded(); // only call trigger now.
 };
 var fbAdapterStatsList = function(snapshot) {
   var data = snapshot.val();
@@ -149,17 +157,26 @@ var fbAdapterTrackingList = function(snapshot) {
 };
 
 var fbAdapterTrackEpisode = function(e) {
-  e.preventDefault();
   var data = {};
   var episodeId = $(this).attr("data-episode");
   var value = false;
-  if ($(this).hasClass("green-text")) {
-    $(this).removeClass("green-text");
-  }
-  else {
-    $(this).addClass("green-text");
+  if ($(this).hasClass("infoTrackEpisodeOneWay")) {
+    // don't prevent default
+    // only change to true (no toggle)
+    $(".infoTrackEpisode[data-episode='{0}']".format(episodeId)).addClass("green-text");
     value = true;
   }
+  else {
+    e.preventDefault();
+    if ($(this).hasClass("green-text")) {
+      $(this).removeClass("green-text");
+    }
+    else {
+      $(this).addClass("green-text");
+      value = true;
+    }
+  }
+  
   data["tracker/" + fbUser.uid + "/" + lnActiveInfo.titleSlug + "/" + episodeId] = value;
   fbDatabase.ref().update(data);
 };
@@ -174,4 +191,32 @@ var ghProcRequest = function(data) {
   var timeSince = moment(data[0].commit.author.date).fromNow();
   $("[data-gh-commit]").html("-{0} <a href='{2}'>{1}</a> {3}".format(hash, message, data[0].html_url, timeSince));
   $("[data-gh-commit-short]").text("-{0} ({1})".format(hash, timeSince));
+};
+
+var kaFbPushGroupChatMessage = function(groupId, sender, message, type) {
+  var prefixString = "group-chat/" + groupId + "/";
+  var data = {};
+
+  data[prefixString + "sender"] = sender;
+  data[prefixString + "message"] = message;
+  data[prefixString + "type"] = type;
+  data[prefixString + "lastSync"] = moment().format(); 
+  fbDatabase.ref().update(data);
+}
+var kbInitFbPullGroupChatMessage = function(groupId) {
+  fbDatabase.ref("group-chat/" + groupId).on("value", kbFbPullGroupChatMessage);
+};
+var kbFbPullGroupChatMessage = function(snapshot) {
+  var data = snapshot.val();
+  if (data !== null) {
+    if (data.type == "message") {
+      kaPullGroupChatMessage(data);
+    }
+    else if (data.type == "status") {
+      kaPullStatus(data);
+    }
+    else {
+      kaPullEvent(data);
+    }
+  }
 };

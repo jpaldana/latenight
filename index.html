@@ -208,7 +208,7 @@
             </div>
           </div>
         </div>
-        <div class="white-text">Please wait...</div>
+        <div class="white-text">Please wait...<br/><span id="loader-text"></span></div>
       </div>
     </div>
   </section>
@@ -258,7 +258,33 @@
         <li><a class="btn-floating light-blue lighten-4 tooltipped modal-trigger" data-position="top" data-delay="50" data-tooltip="Write a review" href="#editor"><i class="material-icons">mode_edit</i></a></li>
       </ul>
     </div>
+  </section>
 
+  <section id="group" class="overlay" aria-hidden="true">
+    <nav>
+      <div class="nav-wrapper light-blue darken-4">
+        <a href="#!" class="brand-logo center ellipsis" data-group-title>Group Watch</a>
+        <ul class="left">
+          <li><a href="#!close-group"><i class="material-icons">chevron_left</i></a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="white overlay-content bg-fix" data-ln-active-background>
+      <div class="container white black-text">
+        <video id="group-media-player" class="video-js vjs-default-skin vjs-16-9 vjs-big-play-centered" controls preload="auto" width="640" height="264" data-setup='{"manualCleanup": true}'>
+        </video>
+        <div class="group-chat">
+          <div class="row">
+            <div class="input-field col s12">
+              <input placeholder="Say something..." id="group-chat-message" type="text">
+              <label for="group-chat-message">Message</label>
+            </div>
+          </div>
+          <ul id="chat-container" class="scroll"></ul>
+        </div>
+      </div>
+    </div>
   </section>
 
   <div id="login" class="grey white-text darken-4 modal">
@@ -431,7 +457,6 @@
     </div>
   </div>
 
-
   <div id="editor" class="modal modal-fixed-footer">
     <div class="modal-content white black-text">
       <div class="row">
@@ -471,6 +496,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.17/marked.min.js"></script>
   <script src="js/materialize.min.js"></script>
   <script src="js/kyu.js"></script>
+  <script src="js/kazoku.js"></script>
   <script src="js/latenight.js"></script>
   <script src="js/firebase.js"></script>
   <script src="js/adapter.js"></script>

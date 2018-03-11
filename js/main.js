@@ -7,6 +7,7 @@ var SonarrEpisodeEndpoint = "https://dev6-api.latenight.moe/twilight/Thumbnail.p
 var LatenightApiEndpoint = "https://dev6-api.latenight.moe/api.php";
 var TwilightApiEndpoint = "https://dev6-api.latenight.moe/twilight/Subtitle.php?host=sonarr&id=";
 var GithubApiEndpoint = "https://api.github.com/repos/jpaldana/latenight/commits?per_page=1";
+var MeiEndpoint = "https://mei.aldana.io";
 
 var evLatenightReady = false;
 var evFirebaseReady = false;
@@ -29,6 +30,7 @@ $(function(){
   });
 
   //elLoader.attr("aria-hidden", "false");
+  textLoader("Refreshing sources...");
   qWaitAllLoaded(hideLoader);
 });
 var showLoader = function(noAutoLoad) {
@@ -53,6 +55,9 @@ var hideLoader = function(force) {
 };
 var hideLoaderForce = function() {
   hideLoader(true);
+};
+var textLoader = function(text) {
+  elLoaderText.text(text);
 };
 var loaderStatus = 0;
 /*
@@ -80,3 +85,11 @@ function bytesToSize(bytes) {
   var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
   return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
 };
+function escapeHtml(unsafe) {
+  return unsafe
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;");
+}

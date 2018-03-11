@@ -157,6 +157,18 @@ ul.collection {
   background-color: rgba(0, 0, 0, 0.75);
 }
 
+/*
+#chat-container > li > span {
+}
+*/
+.group-chat {
+  padding: 1em;
+}
+#chat-container .group-chat-date {
+  font-size: 0.7em;
+  margin-right: 1em;
+}
+
 .background-faded img {
   width: 100%;
   filter: blur(4px);
@@ -168,4 +180,8 @@ ul.collection {
 }
 [aria-hidden="false"] {
   display: block;
+}
+
+.vjs-texttrack-settings {
+  display: none;
 }

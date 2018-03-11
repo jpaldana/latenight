@@ -39,7 +39,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     fbFillUser(user);
     fbDatabase = firebase.database();
     fbInitHandlers();
-    lnProcHash();
+    //qLnProcHash();
     Materialize.Toast.removeAll();
     fbReady = true;
     fbSyncData();
@@ -225,9 +225,12 @@ var fbSyncData = function() {
   }
   var prefixString = "users/" + fbUser.uid + "/";
   var data = {};
+  var displayName = typeof fbUser.displayName == "string" ? fbUser.displayName : fbUser.email;
+  var photoURL = typeof fbUser.photoURL == "string" ? fbUser.photoURL : false;
 
-  data[prefixString + "displayName"] = fbUser.displayName;
-  data[prefixString + "photoURL"] = fbUser.photoURL;
+  data[prefixString + "displayName"] = displayName;
+  data[prefixString + "photoURL"] = photoURL;
+  data[prefixString + "lastSync"] = moment().format(); 
   fbDatabase.ref().update(data);
 };
 

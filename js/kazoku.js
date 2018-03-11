@@ -8,9 +8,14 @@ var elsGroupTitle = $("[data-group-title]");
 var kaGroupId = false;
 var kaTimeSyncTimer = false;
 var kaActiveEpisodeId = false;
+var kaActiveTitleSlug = false;
 
 var kaDoGroupWatch = function(e) {
   e.preventDefault();
+  if (!fbLoggedIn || fbUser.isAnonymous) {
+    Materialize.toast("Cannot create group instance (not logged in)", 2000);
+    return;
+  }
   Materialize.toast("Creating group instance...", 2000);
   var group = fbUser.uid; //"g0test";
   kaFbResetRoom(group);
@@ -29,6 +34,8 @@ var kaLoadGroupWatch = function(groupId, titleSlug, episodeId) {
   elBody.addClass("noscroll");
 
   kaGroupId = groupId;
+  kaActiveEpisodeId = episodeId;
+  kaActiveTitleSlug = titleSlug;
 
   elGroupChatMessage.off("keyup").on("keyup", kaHandleGroupChatMessage);
 
@@ -41,8 +48,10 @@ var kaLoadGroupWatch = function(groupId, titleSlug, episodeId) {
   lnDoGenerateInfo(titleSlug);
   // defer episode load
   qLatenightLoaded = false;
-  kaActiveEpisodeId = episodeId;
   qWaitLatenightLoaded(kaEpisodeLoad);
+
+  showLoader(true);
+  textLoader("Entering group instance...");
 };
 
 var kaHandleGroupChatMessage = function(e) {
@@ -71,7 +80,7 @@ var kaPullGroupHeartbeatMessage = function(data) {
 };
 
 var kaProcGroupChatMessage = function(senderUid, message, lastSync) {
-  var sender = "Unknown User";
+  var sender = "Unknown User ({0})".format(senderUid.toString().substring(0, 4));
   var photoURL = "img/blank-episode.jpg";
   if (typeof senderUid == "string" && typeof fbCachedUsersList[senderUid] == "object") {
     sender = fbCachedUsersList[senderUid].displayName;
@@ -94,6 +103,8 @@ var kaTimeSync = function() {
 
 var kaEpisodeLoad = function() {
   console.log("deferred ka episode load");
+  showLoader(true);
+  textLoader("Waiting for episode to load...");
 
   for (var i in lnSeasonCache) {
     var blob = lnSeasonCache[i];
@@ -116,6 +127,7 @@ var kaEpisodeLoad = function() {
 };
 var kaProcGdriveFile = function(data) {
   Materialize.toast("Episode loaded successfully!", 2000);
+  hideLoaderForce();
 
   lnLog("[ka] got file", data);
 
@@ -247,7 +259,7 @@ var kaProcGroupStatusMessage = function(senderUid, event, lastSync, currentTime)
 var kaProcGroupHeartbeatMessage = function(senderUid, event, lastSync) {
   var target = $("#group-users div[data-user='{0}']".format(senderUid));
   if (target.length == 0) {
-    var sender = "Unknown User";
+    var sender = "Unknown User ({0})".format(senderUid.toString().substring(0, 4));
     var photoURL = "img/blank-episode.jpg";
     if (typeof senderUid == "string" && typeof fbCachedUsersList[senderUid] == "object") {
       sender = fbCachedUsersList[senderUid].displayName;

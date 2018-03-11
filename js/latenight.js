@@ -425,7 +425,9 @@ var lnDoGenerateEpisodes = function() {
       var direct = "#!";
       if (blob.hasFile) {
         epStatus = "{0} / {1}".format(blob.episodeFile.quality.quality.name, bytesToSize(blob.episodeFile.size));
-        direct = MeiEndpoint + blob.episodeFile.path;
+        if (fbLoggedIn && !fbUser.isAnonymous) {
+          direct = MeiEndpoint + blob.episodeFile.path;
+        }
       }
       var episodeId = "s{0}e{1}".format(seasonNum, blob.episodeNumber);
       var details = "<ul class='collection'>" + 
@@ -644,6 +646,8 @@ var lnProcFile = function(e) {
     "gdrive-file": file
   }, lnProcGdriveFile);
   Materialize.toast("Loading episode...", 2000);
+  showLoader(true);
+  textLoader("Loading episode...");
 };
 
 var lnProcGdriveFile = function(data) {
@@ -677,6 +681,7 @@ var lnProcGdriveFile = function(data) {
     src: TwilightApiEndpoint + lnAwaitFileId,
     manualCleanup: true
   });
+  hideLoaderForce();
 };
 
 $("body").on("click", "a[href^='#!']", lnProcHash);
